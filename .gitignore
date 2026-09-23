@@ -1,0 +1,19 @@
+# Sensitive credentials & tokens (NEVER commit real credentials)
+credentials.json
+accounts.json
+daily_stats.json
+request_logs.json
+*.env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+*.log
+*.err
+
+# OS files
+.DS_Store
+Thumbs.db

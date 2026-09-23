@@ -1,0 +1,11 @@
+[
+  {
+    "id": "acc_default",
+    "name": "Primary Account",
+    "email": "user@example.com",
+    "access_token": "YOUR_ACCESS_TOKEN",
+    "refresh_token": "YOUR_REFRESH_TOKEN",
+    "expires_at": 0,
+    "active": true
+  }
+]
