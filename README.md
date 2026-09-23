@@ -23,12 +23,12 @@
 
 | 模型代号（请求参数） | 上游真实 Antigravity 模型 | 核心能力与特性 |
 | :--- | :--- | :--- |
-| `gemini-3.7-flash-high` | `gemini-2.5-flash` / Antigravity Internal | 支持深度思维链思考、工具调用、高并发极速流式 |
-| `gemini-3.8-flash-high` | `gemini-2.5-flash` / Antigravity Internal | 毫秒级极速响应、日常会话与自动化指令 |
-| `gemini-pro-agent` | `gemini-2.5-pro` / Antigravity Internal | 复杂长文本逻辑推理、代码深度重构、工具链编排 |
-| `claude-sonnet-4-6` | `claude-3-5-sonnet` (Antigravity 虚拟映射) | 超强代码与工程架构能力、高精准度格式输出 |
-| `claude-opus-4-6-thinking` | `claude-3-opus` (Antigravity 虚拟映射) | 顶级思考链深度推理、长流程决策规划 |
-| `gemini-3.1-flash-image` | Antigravity Multimodal Image Pipeline | 原生 AI 图像生成通道，直出高清图像 Markdown |
+| `gemini-3.7-flash-high` | `gemini-3.7-flash-high` (原生满血旗舰) | 官方旗舰满血版！支持超深度思维链思考、工具调用、超高并发极速流式 |
+| `gemini-3.8-flash-high` | `gemini-3.8-flash-high` (原生满血预览) | 下一代满血架构、毫秒级响应、强力代码与逻辑理解 |
+| `gemini-pro-agent` | `gemini-pro-agent` (满血推理中枢) | Google 官方 Agent 架构、长上下文复杂推理、深度工程重构 |
+| `claude-sonnet-4-6` | `claude-sonnet-4-6` (满血代码神尊) | 顶尖代码编写、精准格式输出、架构设计与逆向分析 |
+| `claude-opus-4-6-thinking` | `claude-opus-4-6-thinking` (满血究极脑力) | 顶级思考链深度推理、长流程决策规划与数学逻辑 |
+| `gemini-3.1-flash-image` | `gemini-3.1-flash-image` (多模态画王) | 官方原生生图通道，自动剥离 Tools 冲突，秒级渲染高清图片 Markdown |
 
 *注：反代内置智能模糊别名映射，传入 `gemini-3.7-flash`、`gemini-3.1-pro`、`claude-sonnet`、`imagen-3`、`dall-e-3` 等常用名称均会自动路由到最佳可用模型。*
 
