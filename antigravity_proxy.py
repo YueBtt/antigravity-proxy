@@ -1289,20 +1289,56 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         mode_endpoint = "streamGenerateContent?alt=sse" if stream else "generateContent"
         target_url = f"{ANTIGRAVITY_API_URL}/v1internal:{mode_endpoint}"
 
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-            "User-Agent": ANTIGRAVITY_USER_AGENT
-        }
+        def _open_gemini_with_retry():
+            accs = load_accounts()
+            # 优先使用当前激活账号，其次轮询其他有 refresh_token 的账号
+            ordered_accs = [a for a in accs if a.get("active")] + [a for a in accs if not a.get("active")]
+            last_exc = None
+            for acc_idx, acc_item in enumerate(ordered_accs):
+                cur_tok = acc_item.get("access_token") if acc_idx == 0 and token else (refresh_token(acc_item) or acc_item.get("access_token"))
+                if not cur_tok:
+                    continue
+                for attempt in range(3):
+                    hdrs = {
+                        "Authorization": f"Bearer {cur_tok}",
+                        "Content-Type": "application/json",
+                        "User-Agent": ANTIGRAVITY_USER_AGENT
+                    }
+                    req_obj = urllib.request.Request(target_url, data=json.dumps(gemini_payload).encode("utf-8"), headers=hdrs)
+                    try:
+                        return urllib.request.urlopen(req_obj, context=SSL_CTX, timeout=300)
+                    except urllib.error.HTTPError as he:
+                        last_exc = he
+                        err_body = ""
+                        try:
+                            err_body = he.read().decode("utf-8", errors="ignore")
+                        except Exception:
+                            pass
+                        print(f"[Retry] HTTP {he.code} on {target_model} (acc={acc_item.get('email')}, attempt={attempt+1}): {err_body[:200]}")
+                        if he.code == 401:
+                            cur_tok = refresh_token(acc_item)
+                            if not cur_tok:
+                                break
+                        elif he.code in (403, 429, 500, 502, 503, 504):
+                            time.sleep(1.2 * (attempt + 1))
+                            continue
+                        else:
+                            raise he
+                    except Exception as ex:
+                        last_exc = ex
+                        time.sleep(1.0)
+                        continue
+            if last_exc:
+                raise last_exc
+            raise Exception("All accounts and retries exhausted")
 
-        g_req = urllib.request.Request(target_url, data=json.dumps(gemini_payload).encode("utf-8"), headers=headers)
         prompt_tokens = 0
         comp_tokens = 0
         thoughts_tokens = 0
 
         if stream:
             try:
-                with urllib.request.urlopen(g_req, context=SSL_CTX, timeout=300) as resp:
+                with _open_gemini_with_retry() as resp:
                     self.send_response(200)
                     self.send_header("Content-Type", "text/event-stream; charset=utf-8")
                     self.send_header("Cache-Control", "no-cache")
@@ -1468,7 +1504,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     pass
         else:
             try:
-                with urllib.request.urlopen(g_req, context=SSL_CTX, timeout=300) as resp:
+                with _open_gemini_with_retry() as resp:
                     g_res = json.loads(resp.read().decode("utf-8"))
                     candidates = g_res.get("response", {}).get("candidates", []) or g_res.get("candidates", [])
                     usage = g_res.get("response", {}).get("usageMetadata", {}) or g_res.get("usageMetadata", {})
