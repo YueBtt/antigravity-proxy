@@ -413,6 +413,15 @@ def convert_openai_to_gemini(req_json):
     if gen_config:
         gemini_req["generationConfig"] = gen_config
 
+    # 官方 API 标准 safetySettings 参数配置（设为 BLOCK_NONE 防止常规内容误拦截）
+    gemini_req["safetySettings"] = [
+        {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        {"category": "HARM_CATEGORY_CIVIC_INTEGRITY", "threshold": "BLOCK_NONE"}
+    ]
+
     return target_model, {
         "project": "aicode-consumers",
         "model": target_model,
@@ -1133,7 +1142,14 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             "model": "gemini-3.1-flash-image",
             "request": {
                 "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]}
+                "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]},
+                "safetySettings": [
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_CIVIC_INTEGRITY", "threshold": "BLOCK_NONE"}
+                ]
             }
         }
 
