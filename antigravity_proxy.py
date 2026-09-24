@@ -1149,72 +1149,85 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 "requestType": "image_gen"
             }
 
-            try:
-                req = urllib.request.Request(target_url, data=json.dumps(gemini_payload).encode("utf-8"), headers=headers)
-                with urllib.request.urlopen(req, context=SSL_CTX, timeout=120) as resp:
-                    b64_image = ""
-                    for line in resp:
-                        l = line.decode("utf-8", errors="ignore").strip()
-                        if l.startswith("data:"):
-                            try:
-                                chunk = json.loads(l[5:])
-                                cands = chunk.get("response", {}).get("candidates", []) or chunk.get("candidates", [])
-                                if cands:
-                                    for p in cands[0].get("content", {}).get("parts", []):
-                                        if "inlineData" in p:
-                                            b64_image = p["inlineData"].get("data", "")
-                                            break
-                            except Exception:
-                                pass
-                        if b64_image:
-                            break
+            # 单账号最多尝试 2 次（处理 Google 偶发 503 算力满载抖动）
+            for attempt in range(2):
+                try:
+                    req = urllib.request.Request(target_url, data=json.dumps(gemini_payload).encode("utf-8"), headers=headers)
+                    with urllib.request.urlopen(req, context=SSL_CTX, timeout=120) as resp:
+                        b64_image = ""
+                        text_reason = ""
+                        for line in resp:
+                            l = line.decode("utf-8", errors="ignore").strip()
+                            if l.startswith("data:"):
+                                try:
+                                    chunk = json.loads(l[5:])
+                                    cands = chunk.get("response", {}).get("candidates", []) or chunk.get("candidates", [])
+                                    if cands:
+                                        for p in cands[0].get("content", {}).get("parts", []):
+                                            if "inlineData" in p:
+                                                b64_image = p["inlineData"].get("data", "")
+                                                break
+                                            elif "text" in p:
+                                                text_reason += p["text"]
+                                except Exception:
+                                    pass
+                            if b64_image:
+                                break
 
-                if not b64_image:
-                    raise Exception("上游生图未返回图片数据")
+                    if not b64_image:
+                        err_detail = f"上游未返回图片 (Google回应: {text_reason[:80]})" if text_reason else "上游生图未返回图片数据"
+                        raise Exception(err_detail)
 
-                # 成功！兼容 OpenAI 标准生图返回结构与 Chat Completions Markdown 图片双向兼容
-                out_resp = {
-                    "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
-                    "object": "chat.completion",
-                    "created": int(time.time()),
-                    "model": "gemini-3.1-flash-image",
-                    "choices": [{
-                        "index": 0,
-                        "message": {
-                            "role": "assistant",
-                            "content": f"![Generated Image](data:image/jpeg;base64,{b64_image})"
-                        },
-                        "finish_reason": "stop"
-                    }],
-                    "data": [
-                        {
-                            "b64_json": b64_image,
-                            "url": f"data:image/jpeg;base64,{b64_image}"
-                        }
-                    ]
-                }
-                res_bytes = json.dumps(out_resp, ensure_ascii=False).encode("utf-8")
-                self.send_response(200)
-                self.send_header("Content-Type", "application/json; charset=utf-8")
-                self.send_header("Content-Length", str(len(res_bytes)))
-                self.send_header("Connection", "close")
-                self.send_cors()
-                self.end_headers()
-                self.wfile.write(res_bytes)
+                    # 成功！兼容 OpenAI 标准生图返回结构与 Chat Completions Markdown 图片双向兼容
+                    out_resp = {
+                        "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
+                        "object": "chat.completion",
+                        "created": int(time.time()),
+                        "model": "gemini-3.1-flash-image",
+                        "choices": [{
+                            "index": 0,
+                            "message": {
+                                "role": "assistant",
+                                "content": f"![Generated Image](data:image/jpeg;base64,{b64_image})"
+                            },
+                            "finish_reason": "stop"
+                        }],
+                        "data": [
+                            {
+                                "b64_json": b64_image,
+                                "url": f"data:image/jpeg;base64,{b64_image}"
+                            }
+                        ]
+                    }
+                    res_bytes = json.dumps(out_resp, ensure_ascii=False).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_header("Content-Length", str(len(res_bytes)))
+                    self.send_header("Connection", "close")
+                    self.send_cors()
+                    self.end_headers()
+                    self.wfile.write(res_bytes)
 
-                latency = int((time.time() - t0) * 1000)
-                record_stat(True, 100, 1000, 0, latency)
-                log_request("gemini-3.1-flash-image", 200, latency, 1100)
-                return
+                    latency = int((time.time() - t0) * 1000)
+                    record_stat(True, 100, 1000, 0, latency)
+                    log_request("gemini-3.1-flash-image", 200, latency, 1100)
+                    return
 
-            except urllib.error.HTTPError as e:
-                last_err = f"HTTP Error {e.code}: {e.read().decode()[:150]}"
-                print(f"[ImageGen] Account {acc_item.get('email')} failed with: {last_err}, trying next...")
-                continue
-            except Exception as e:
-                last_err = str(e)
-                print(f"[ImageGen] Account {acc_item.get('email')} failed with: {last_err}, trying next...")
-                continue
+                except urllib.error.HTTPError as e:
+                    err_body = e.read().decode("utf-8", errors="ignore")[:150]
+                    last_err = f"HTTP Error {e.code}: {err_body}"
+                    print(f"[ImageGen] Account {acc_item.get('email')} attempt {attempt+1} failed with: {last_err}")
+                    if e.code == 503 and attempt == 0:
+                        time.sleep(1.5)
+                        continue
+                    break
+                except Exception as e:
+                    last_err = str(e)
+                    print(f"[ImageGen] Account {acc_item.get('email')} attempt {attempt+1} failed with: {last_err}")
+                    if "503" in last_err and attempt == 0:
+                        time.sleep(1.5)
+                        continue
+                    break
 
         # 如果所有账号都失败
         latency = int((time.time() - t0) * 1000)
