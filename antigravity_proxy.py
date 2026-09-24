@@ -393,15 +393,21 @@ def convert_openai_to_gemini(req_json):
                 # 兼容 Gemini 3.8/3.7，在多轮工具调用时保持模式兼容
                 gemini_req["tools"] = [{"functionDeclarations": func_decls}]
 
-    # gen_config
+    # gen_config (智能动态思考：只有明确指定 -high / -thinking 时才跑 4096 深度思考；默认采用动态自适应思考，极速出字)
     gen_config = {}
     if target_model == "gemini-3.1-flash-image":
         gen_config["responseModalities"] = ["TEXT", "IMAGE"]
-    elif "high" in target_model or "thinking" in target_model or "gemini-3.7" in target_model or "gemini-3.8" in target_model:
+    elif "claude" in target_model:
+        # Claude 模型支持自适应思考
+        gen_config["thinkingConfig"] = {"includeThoughts": True}
+    elif ("high" in raw_model.lower() or "thinking" in raw_model.lower()) and "low" not in raw_model.lower():
+        # 用户显式指定了 -high 或 -thinking，拉满 4096 深度思考啃硬骨头
         gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 4096}
-    elif "low" in target_model:
-        gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 1024}
+    elif "low" in raw_model.lower():
+        # 用户指定了 low 轻量思考
+        gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 512}
     else:
+        # 默认日常请求：使用 Google 官方动态思考 (Dynamic Thinking)，不锁死 4096，简单问题秒回，复杂问题自适应思考！
         gen_config["thinkingConfig"] = {"includeThoughts": True}
     
     if gen_config:
