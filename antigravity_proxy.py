@@ -453,10 +453,10 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
 
 .grid-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
-.card { background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 14px; padding: 12px 6px; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.35); max-width: 100%; box-sizing: border-box; overflow: hidden; }
+.card { background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 14px; padding: 12px 6px; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.35); min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .stat-label { font-size: 10.5px; color: var(--text-secondary); font-weight: 500; margin-bottom: 4px; white-space: nowrap; }
-.stat-val { font-size: 18.5px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1.2; }
-.stat-sub { font-size: 9.5px; color: var(--text-secondary); margin-top: 3px; white-space: nowrap; }
+.stat-val { font-size: clamp(12px, 3.8vw, 17px); font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1.2; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat-sub { font-size: clamp(7.5px, 2.2vw, 9.5px); color: var(--text-secondary); margin-top: 3px; white-space: nowrap; width: 100%; overflow: hidden; text-overflow: ellipsis; }
 
 .section-header { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px; flex-wrap: wrap; gap: 8px; }
 .section-header h3 { font-size: 13.5px; font-weight: 600; color: #e5e7eb; }
@@ -505,15 +505,15 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
       <div class="stat-val" id="stat-rate" style="color:var(--green)">100%</div>
       <div class="stat-sub" id="stat-errs">失败 0 次</div>
     </div>
-    <div class="card">
+    <div class="card" onclick="toggleTokenFormat()" style="cursor:pointer;" title="点击切换缩写与完整数字">
       <div class="stat-label">今日 Tokens</div>
       <div class="stat-val" id="stat-today-tokens">0</div>
-      <div class="stat-sub">当前会话消耗</div>
+      <div class="stat-sub" id="sub-today-tokens">当前会话消耗</div>
     </div>
-    <div class="card">
+    <div class="card" onclick="toggleTokenFormat()" style="cursor:pointer;" title="点击切换缩写与完整数字">
       <div class="stat-label">总消耗 Tokens</div>
       <div class="stat-val" id="stat-total-tokens">0</div>
-      <div class="stat-sub">全账号累计</div>
+      <div class="stat-sub" id="sub-total-tokens">全账号累计</div>
     </div>
   </div>
 
@@ -620,6 +620,27 @@ function toggleEmailMask() {
   refreshData();
 }
 
+let showExactTokens = false;
+function toggleTokenFormat() {
+  showExactTokens = !showExactTokens;
+  refreshData();
+}
+
+function formatCompactNum(num, exactEl, el) {
+  const n = Number(num) || 0;
+  if (showExactTokens) {
+    if (el) el.style.fontSize = 'clamp(9.5px, 2.6vw, 13.5px)';
+    if (exactEl) exactEl.innerText = '点击切换简写';
+    return n.toLocaleString();
+  }
+  if (el) el.style.fontSize = 'clamp(13px, 4.0vw, 17.5px)';
+  if (exactEl) exactEl.innerText = n.toLocaleString();
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e4) return (n / 1e3).toFixed(1) + 'K';
+  return n.toLocaleString();
+}
+
 async function refreshData() {
   try {
     const res = await fetch('/api/stats', { cache: 'no-store' });
@@ -627,8 +648,16 @@ async function refreshData() {
     if (document.getElementById('stat-calls')) document.getElementById('stat-calls').innerText = data.today_calls || 0;
     if (document.getElementById('stat-rate')) document.getElementById('stat-rate').innerText = data.success_rate || '100%';
     if (document.getElementById('stat-errs')) document.getElementById('stat-errs').innerText = '失败 ' + (data.today_errors || 0) + ' 次';
-    if (document.getElementById('stat-today-tokens')) document.getElementById('stat-today-tokens').innerText = (data.today_tokens || 0).toLocaleString();
-    if (document.getElementById('stat-total-tokens')) document.getElementById('stat-total-tokens').innerText = (data.total_tokens || 0).toLocaleString();
+    if (document.getElementById('stat-today-tokens')) {
+      const el = document.getElementById('stat-today-tokens');
+      const subEl = document.getElementById('sub-today-tokens');
+      el.innerText = formatCompactNum(data.today_tokens, subEl, el);
+    }
+    if (document.getElementById('stat-total-tokens')) {
+      const el = document.getElementById('stat-total-tokens');
+      const subEl = document.getElementById('sub-total-tokens');
+      el.innerText = formatCompactNum(data.total_tokens, subEl, el);
+    }
 
     if (data.account) {
       if (document.getElementById('acc-email')) document.getElementById('acc-email').innerText = maskText(data.account.email) || '未配置';
