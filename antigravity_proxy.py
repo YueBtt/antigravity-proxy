@@ -1451,6 +1451,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 try:
                     with urllib.request.urlopen(req_obj, context=SSL_CTX, timeout=60) as resp:
                         g_res = json.loads(resp.read().decode("utf-8"))
+                    if not acc_item.get("active"):
+                        for a in accs:
+                            a["active"] = (a.get("email") == acc_item.get("email"))
+                        save_accounts(accs)
                     break
                 except urllib.error.HTTPError as he:
                     err_detail = ""
@@ -1465,7 +1469,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         print("[AnthropicBridge] Stripping incompatible tools schema and retrying immediately...")
                         del gemini_payload["request"]["tools"]
                         continue
-                    if he.code == 400:
+                    if he.code in (400, 403, 429):
                         break
                     time.sleep(1.0)
                 except Exception as ex:
@@ -1619,7 +1623,13 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     }
                     req_obj = urllib.request.Request(target_url, data=json.dumps(gemini_payload).encode("utf-8"), headers=hdrs)
                     try:
-                        return urllib.request.urlopen(req_obj, context=SSL_CTX, timeout=300)
+                        resp_obj = urllib.request.urlopen(req_obj, context=SSL_CTX, timeout=300)
+                        if not acc_item.get("active"):
+                            for a in accs:
+                                a["active"] = (a.get("email") == acc_item.get("email"))
+                            save_accounts(accs)
+                            print(f"[Failover] Promoted healthy account {acc_item.get('email')} to primary active account!")
+                        return resp_obj
                     except urllib.error.HTTPError as he:
                         last_exc = he
                         err_body = ""
@@ -1632,8 +1642,12 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                             cur_tok = refresh_token(acc_item)
                             if not cur_tok:
                                 break
-                        elif he.code in (403, 429, 500, 502, 503, 504):
-                            time.sleep(1.2 * (attempt + 1))
+                        elif he.code in (403, 429):
+                            # 如果当前账号遇到 403(Verify your account) 或 429 限流，不傻等 3 次，当场切换下一个健康账号并永久标记新的 active 账号！
+                            print(f"[Failover] Account {acc_item.get('email')} returned {he.code}, switching to next account immediately!")
+                            break
+                        elif he.code in (500, 502, 503, 504):
+                            time.sleep(0.8)
                             continue
                         else:
                             raise he
