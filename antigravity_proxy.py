@@ -270,14 +270,31 @@ def _clean_schema_for_gemini(schema):
     allowed_keys = {"type", "description", "properties", "required", "items", "enum", "nullable"}
     for k, v in schema.items():
         if k in allowed_keys:
-            if k == "properties" and isinstance(v, dict):
+            if k == "type" and isinstance(v, list):
+                # Gemini 不支持 JSON Schema 的数组类型如 ["string", "null"]，自动拆为单类型 + nullable
+                non_null = [x for x in v if x != "null"]
+                cleaned["type"] = non_null[0] if non_null else "string"
+                if "null" in v:
+                    cleaned["nullable"] = True
+            elif k == "properties" and isinstance(v, dict):
                 cleaned[k] = {pk: _clean_schema_for_gemini(pv) for pk, pv in v.items()}
             elif k == "items" and isinstance(v, dict):
                 cleaned[k] = _clean_schema_for_gemini(v)
             else:
                 cleaned[k] = v
-    if "type" not in cleaned and "properties" in cleaned:
-        cleaned["type"] = "object"
+    if "type" not in cleaned:
+        if "properties" in cleaned:
+            cleaned["type"] = "object"
+        elif "items" in cleaned:
+            cleaned["type"] = "array"
+        else:
+            cleaned["type"] = "string"
+    if cleaned.get("type") == "object" and "properties" in cleaned and "required" in cleaned:
+        # 剔除 required 中不在 properties 里的非法字段，防止 Google 报 400
+        valid_props = set(cleaned["properties"].keys())
+        cleaned["required"] = [r for r in cleaned["required"] if r in valid_props]
+        if not cleaned["required"]:
+            del cleaned["required"]
     return cleaned
 
 def convert_openai_to_gemini(req_json):
@@ -374,24 +391,24 @@ def convert_openai_to_gemini(req_json):
     if system_parts:
         gemini_req["systemInstruction"] = {"parts": system_parts}
 
-        # Tools 协议转换 (生图模型不传工具，避免与图文多模态冲突)
-        tools = req_json.get("tools")
-        if target_model != "gemini-3.1-flash-image" and tools and isinstance(tools, list):
-            func_decls = []
-            for t in tools:
-                if t.get("type") == "function":
-                    f_info = t.get("function", {})
-                    decl = {
-                        "name": f_info.get("name"),
-                        "description": f_info.get("description", "")
-                    }
-                    params = f_info.get("parameters")
-                    if params and isinstance(params, dict):
-                        decl["parameters"] = _clean_schema_for_gemini(params)
-                    func_decls.append(decl)
-            if func_decls:
-                # 兼容 Gemini 3.8/3.7，在多轮工具调用时保持模式兼容
-                gemini_req["tools"] = [{"functionDeclarations": func_decls}]
+    # Tools 协议转换 (生图模型不传工具，避免与图文多模态冲突)
+    tools = req_json.get("tools")
+    if target_model != "gemini-3.1-flash-image" and tools and isinstance(tools, list):
+        func_decls = []
+        for t in tools:
+            if t.get("type") == "function":
+                f_info = t.get("function", {})
+                decl = {
+                    "name": f_info.get("name"),
+                    "description": f_info.get("description", "")
+                }
+                params = f_info.get("parameters")
+                if params and isinstance(params, dict):
+                    decl["parameters"] = _clean_schema_for_gemini(params)
+                func_decls.append(decl)
+        if func_decls:
+            # 兼容 Gemini 3.8/3.7，在多轮工具调用时保持模式兼容
+            gemini_req["tools"] = [{"functionDeclarations": func_decls}]
 
     # gen_config (智能动态思考：只有明确指定 -high / -thinking 时才跑 4096 深度思考；默认采用动态自适应思考，极速出字)
     gen_config = {}
@@ -1296,6 +1313,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         stream = req_json.get("stream", False)
 
         # 将 Anthropic Messages 格式无损转换为 OpenAI Chat Completions 格式复用底层转换与重试
+        tool_id_map = {}
         oai_messages = []
         sys_prompt = req_json.get("system")
         if sys_prompt:
@@ -1321,11 +1339,14 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     if btype == "text":
                         txt_parts.append(blk.get("text", ""))
                     elif btype == "tool_use":
+                        t_id = blk.get("id", f"toolu_{uuid.uuid4().hex[:12]}")
+                        t_name = blk.get("name", "tool")
+                        tool_id_map[t_id] = t_name
                         tool_calls_out.append({
-                            "id": blk.get("id", f"toolu_{uuid.uuid4().hex[:12]}"),
+                            "id": t_id,
                             "type": "function",
                             "function": {
-                                "name": blk.get("name", "tool"),
+                                "name": t_name,
                                 "arguments": json.dumps(blk.get("input", {}), ensure_ascii=False)
                             }
                         })
@@ -1333,10 +1354,12 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         t_content = blk.get("content", "")
                         if isinstance(t_content, list):
                             t_content = "\n".join(x.get("text", "") for x in t_content if isinstance(x, dict))
+                        tu_id = blk.get("tool_use_id", "tool")
+                        real_fn_name = tool_id_map.get(tu_id, blk.get("name", tu_id))
                         oai_messages.append({
                             "role": "tool",
-                            "tool_call_id": blk.get("tool_use_id", "tool"),
-                            "name": blk.get("tool_use_id", "tool"),
+                            "tool_call_id": tu_id,
+                            "name": real_fn_name,
                             "content": str(t_content)
                         })
                 if txt_parts or tool_calls_out:
