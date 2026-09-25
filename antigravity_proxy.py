@@ -1325,8 +1325,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         else:
                             raise he
                     except Exception as ex:
+                        # 捕获 TLS/SSL EOF 握手断开、网络超时、连接重置等瞬时网络异常并自动重试
                         last_exc = ex
-                        time.sleep(1.0)
+                        print(f"[Retry] Network/SSL glitch ({type(ex).__name__}: {ex}) on {target_model} (attempt={attempt+1}), retrying...")
+                        time.sleep(1.5 * (attempt + 1))
                         continue
             if last_exc:
                 raise last_exc
