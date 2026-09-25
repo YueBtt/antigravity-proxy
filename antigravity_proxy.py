@@ -1392,8 +1392,42 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             oai_req["tools"] = oai_tools
 
         target_model, gemini_payload = convert_openai_to_gemini(oai_req)
-        # 针对 Claude Code 使用动态极速思考，过滤冗余内部 thought
-        gemini_payload["request"]["generationConfig"] = {"thinkingConfig": {"includeThoughts": False}}
+        # 针对 Claude Code：1. 不传冗余复杂 schema 避免 Google 400 Invalid Schema；2. 400 错误绝不浪费 45 秒重试！
+        if "tools" in gemini_payload.get("request", {}):
+            # 精简 Claude Code 的 tools 定义，只保留核心字段防止 Google Gemini 报 400 INVALID_ARGUMENT
+            clean_decls = []
+            for d in gemini_payload["request"]["tools"][0].get("functionDeclarations", []):
+                p = d.get("parameters", {})
+                simple_props = {}
+                for pk, pv in (p.get("properties") or {}).items():
+                    if isinstance(pv, dict):
+                        t_val = pv.get("type", "string")
+                        if isinstance(t_val, list):
+                            t_val = [x for x in t_val if x != "null"][0] if [x for x in t_val if x != "null"] else "string"
+                        if t_val not in ("string", "number", "integer", "boolean", "array", "object"):
+                            t_val = "string"
+                        prop_entry = {"type": t_val, "description": str(pv.get("description", ""))[:200]}
+                        if t_val == "array":
+                            prop_entry["items"] = {"type": "string"}
+                        elif t_val == "object":
+                            prop_entry["properties"] = {"value": {"type": "string"}}
+                        simple_props[pk] = prop_entry
+                clean_decl = {
+                    "name": d.get("name"),
+                    "description": str(d.get("description", ""))[:300]
+                }
+                if simple_props:
+                    req_list = [r for r in (p.get("required") or []) if r in simple_props]
+                    clean_decl["parameters"] = {"type": "object", "properties": simple_props}
+                    if req_list:
+                        clean_decl["parameters"]["required"] = req_list
+                clean_decls.append(clean_decl)
+            if clean_decls:
+                gemini_payload["request"]["tools"] = [{"functionDeclarations": clean_decls}]
+
+        # 移除不兼容的 generationConfig 防止 gemini-3.8-flash-high 报 thinkingConfig 400
+        if "generationConfig" in gemini_payload["request"]:
+            del gemini_payload["request"]["generationConfig"]
 
         token = get_valid_token()
         target_url = f"{ANTIGRAVITY_API_URL}/v1internal:generateContent"
@@ -1407,7 +1441,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             cur_tok = acc_item.get("access_token") if acc_idx == 0 and token else (refresh_token(acc_item) or acc_item.get("access_token"))
             if not cur_tok:
                 continue
-            for attempt in range(3):
+            for attempt in range(2):
                 hdrs = {
                     "Authorization": f"Bearer {cur_tok}",
                     "Content-Type": "application/json",
@@ -1415,13 +1449,29 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 }
                 req_obj = urllib.request.Request(target_url, data=json.dumps(gemini_payload).encode("utf-8"), headers=hdrs)
                 try:
-                    with urllib.request.urlopen(req_obj, context=SSL_CTX, timeout=180) as resp:
+                    with urllib.request.urlopen(req_obj, context=SSL_CTX, timeout=60) as resp:
                         g_res = json.loads(resp.read().decode("utf-8"))
                     break
+                except urllib.error.HTTPError as he:
+                    err_detail = ""
+                    try:
+                        err_detail = he.read().decode("utf-8", errors="ignore")
+                    except Exception:
+                        pass
+                    last_err = f"HTTP {he.code}: {err_detail[:300]}"
+                    print(f"[AnthropicBridge] {last_err}")
+                    # 如果带 tools 报 400，当场自动剥离 tools 降级重试，1秒内秒回绝不卡死！
+                    if he.code == 400 and "tools" in gemini_payload["request"]:
+                        print("[AnthropicBridge] Stripping incompatible tools schema and retrying immediately...")
+                        del gemini_payload["request"]["tools"]
+                        continue
+                    if he.code == 400:
+                        break
+                    time.sleep(1.0)
                 except Exception as ex:
-                    last_err = ex
-                    time.sleep(1.2 * (attempt + 1))
-            if g_res is not None:
+                    last_err = str(ex)
+                    time.sleep(1.0)
+            if g_res is not None or (last_err and "HTTP 400" in str(last_err)):
                 break
 
         latency = int((time.time() - t0) * 1000)
