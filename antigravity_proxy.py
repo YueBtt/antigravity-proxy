@@ -1519,8 +1519,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "text/event-stream; charset=utf-8")
             self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "close")
             self.send_cors()
             self.end_headers()
+            self.close_connection = True
 
             def _send_sse(ev, data_dict):
                 s = f"event: {ev}\ndata: {json.dumps(data_dict, ensure_ascii=False)}\n\n"
