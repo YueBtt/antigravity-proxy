@@ -838,9 +838,25 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", "0")
         self.end_headers()
 
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_cors()
+        self.end_headers()
+
     def do_GET(self):
         url = urllib.parse.urlparse(self.path)
         path = url.path
+
+        if path in ["/api/hello", "/v1/hello"]:
+            data = json.dumps({"status": "ok", "message": "hello"}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(data)
+            return
 
         if path in ["/", "/index.html"]:
             body = DASHBOARD_HTML.encode("utf-8")
@@ -1097,6 +1113,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.handle_image_generations(body)
             return
 
+        if path in ["/v1/messages", "/messages"]:
+            self.handle_anthropic_messages(body)
+            return
+
         if path == "/v1/chat/completions":
             try:
                 chk = json.loads(body.decode("utf-8"))
@@ -1262,6 +1282,224 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         self.send_cors()
         self.end_headers()
         self.wfile.write(res)
+
+    def handle_anthropic_messages(self, body):
+        t0 = time.time()
+        try:
+            req_json = json.loads(body.decode("utf-8"))
+        except Exception:
+            self.send_response(400)
+            self.end_headers()
+            return
+
+        raw_model = str(req_json.get("model", "gemini-3.8-flash-high"))
+        stream = req_json.get("stream", False)
+
+        # 将 Anthropic Messages 格式无损转换为 OpenAI Chat Completions 格式复用底层转换与重试
+        oai_messages = []
+        sys_prompt = req_json.get("system")
+        if sys_prompt:
+            if isinstance(sys_prompt, str):
+                oai_messages.append({"role": "system", "content": sys_prompt})
+            elif isinstance(sys_prompt, list):
+                s_txt = "\n".join(b.get("text", "") for b in sys_prompt if isinstance(b, dict) and b.get("type") == "text")
+                if s_txt:
+                    oai_messages.append({"role": "system", "content": s_txt})
+
+        for m in req_json.get("messages", []):
+            role = m.get("role", "user")
+            content = m.get("content", "")
+            if isinstance(content, str):
+                oai_messages.append({"role": role, "content": content})
+            elif isinstance(content, list):
+                txt_parts = []
+                tool_calls_out = []
+                for blk in content:
+                    if not isinstance(blk, dict):
+                        continue
+                    btype = blk.get("type")
+                    if btype == "text":
+                        txt_parts.append(blk.get("text", ""))
+                    elif btype == "tool_use":
+                        tool_calls_out.append({
+                            "id": blk.get("id", f"toolu_{uuid.uuid4().hex[:12]}"),
+                            "type": "function",
+                            "function": {
+                                "name": blk.get("name", "tool"),
+                                "arguments": json.dumps(blk.get("input", {}), ensure_ascii=False)
+                            }
+                        })
+                    elif btype == "tool_result":
+                        t_content = blk.get("content", "")
+                        if isinstance(t_content, list):
+                            t_content = "\n".join(x.get("text", "") for x in t_content if isinstance(x, dict))
+                        oai_messages.append({
+                            "role": "tool",
+                            "tool_call_id": blk.get("tool_use_id", "tool"),
+                            "name": blk.get("tool_use_id", "tool"),
+                            "content": str(t_content)
+                        })
+                if txt_parts or tool_calls_out:
+                    msg_item = {"role": role, "content": "\n".join(txt_parts) if txt_parts else ""}
+                    if tool_calls_out:
+                        msg_item["tool_calls"] = tool_calls_out
+                    oai_messages.append(msg_item)
+
+        oai_tools = []
+        for t in req_json.get("tools", []):
+            if isinstance(t, dict) and t.get("name"):
+                oai_tools.append({
+                    "type": "function",
+                    "function": {
+                        "name": t.get("name"),
+                        "description": t.get("description", ""),
+                        "parameters": t.get("input_schema", {"type": "object", "properties": {}})
+                    }
+                })
+
+        # 无论 Claude Code 传 3.8 还是 claude-sonnet，统一锁定 gemini-3.8-flash-high 极速响应
+        mapped_m = "gemini-3.8-flash-high"
+        if "opus" in raw_model.lower():
+            mapped_m = "claude-opus-4-6-thinking"
+        elif "sonnet" in raw_model.lower():
+            mapped_m = "gemini-3.8-flash-high"
+
+        oai_req = {"model": mapped_m, "messages": oai_messages}
+        if oai_tools:
+            oai_req["tools"] = oai_tools
+
+        target_model, gemini_payload = convert_openai_to_gemini(oai_req)
+        # 针对 Claude Code 使用动态极速思考，过滤冗余内部 thought
+        gemini_payload["request"]["generationConfig"] = {"thinkingConfig": {"includeThoughts": False}}
+
+        token = get_valid_token()
+        target_url = f"{ANTIGRAVITY_API_URL}/v1internal:generateContent"
+
+        accs = load_accounts()
+        ordered_accs = [a for a in accs if a.get("active")] + [a for a in accs if not a.get("active")]
+        g_res = None
+        last_err = None
+
+        for acc_idx, acc_item in enumerate(ordered_accs):
+            cur_tok = acc_item.get("access_token") if acc_idx == 0 and token else (refresh_token(acc_item) or acc_item.get("access_token"))
+            if not cur_tok:
+                continue
+            for attempt in range(3):
+                hdrs = {
+                    "Authorization": f"Bearer {cur_tok}",
+                    "Content-Type": "application/json",
+                    "User-Agent": ANTIGRAVITY_USER_AGENT
+                }
+                req_obj = urllib.request.Request(target_url, data=json.dumps(gemini_payload).encode("utf-8"), headers=hdrs)
+                try:
+                    with urllib.request.urlopen(req_obj, context=SSL_CTX, timeout=180) as resp:
+                        g_res = json.loads(resp.read().decode("utf-8"))
+                    break
+                except Exception as ex:
+                    last_err = ex
+                    time.sleep(1.2 * (attempt + 1))
+            if g_res is not None:
+                break
+
+        latency = int((time.time() - t0) * 1000)
+        if g_res is None:
+            record_stat(False, latency_ms=latency, err=str(last_err))
+            log_request(raw_model, 500, latency, 0, str(last_err))
+            self.send_response(500)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({"type": "error", "error": {"type": "api_error", "message": str(last_err)}}).encode("utf-8"))
+            return
+
+        candidates = g_res.get("response", {}).get("candidates", []) or g_res.get("candidates", [])
+        usage = g_res.get("response", {}).get("usageMetadata", {}) or g_res.get("usageMetadata", {})
+        in_tok = usage.get("promptTokenCount", 10)
+        out_tok = usage.get("candidatesTokenCount", 10)
+
+        record_stat(True, in_tok, out_tok, 0, latency)
+        log_request(target_model, 200, latency, in_tok + out_tok)
+
+        content_blocks = []
+        stop_reason = "end_turn"
+        if candidates:
+            for p in candidates[0].get("content", {}).get("parts", []):
+                if p.get("thought"):
+                    continue
+                if "functionCall" in p:
+                    fc = p["functionCall"]
+                    stop_reason = "tool_use"
+                    content_blocks.append({
+                        "type": "tool_use",
+                        "id": f"toolu_{uuid.uuid4().hex[:16]}",
+                        "name": fc.get("name"),
+                        "input": fc.get("args", {})
+                    })
+                elif p.get("text"):
+                    content_blocks.append({"type": "text", "text": p["text"]})
+
+        if not content_blocks:
+            content_blocks.append({"type": "text", "text": "OK"})
+
+        msg_id = f"msg_{uuid.uuid4().hex[:16]}"
+
+        if stream:
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_cors()
+            self.end_headers()
+
+            def _send_sse(ev, data_dict):
+                s = f"event: {ev}\ndata: {json.dumps(data_dict, ensure_ascii=False)}\n\n"
+                self.wfile.write(s.encode("utf-8"))
+
+            try:
+                _send_sse("message_start", {
+                    "type": "message_start",
+                    "message": {
+                        "id": msg_id,
+                        "type": "message",
+                        "role": "assistant",
+                        "model": raw_model,
+                        "content": [],
+                        "stop_reason": None,
+                        "stop_sequence": None,
+                        "usage": {"input_tokens": in_tok, "output_tokens": 1}
+                    }
+                })
+                for idx, blk in enumerate(content_blocks):
+                    if blk["type"] == "text":
+                        _send_sse("content_block_start", {"type": "content_block_start", "index": idx, "content_block": {"type": "text", "text": ""}})
+                        _send_sse("content_block_delta", {"type": "content_block_delta", "index": idx, "delta": {"type": "text_delta", "text": blk["text"]}})
+                        _send_sse("content_block_stop", {"type": "content_block_stop", "index": idx})
+                    elif blk["type"] == "tool_use":
+                        _send_sse("content_block_start", {"type": "content_block_start", "index": idx, "content_block": {"type": "tool_use", "id": blk["id"], "name": blk["name"], "input": {}}})
+                        _send_sse("content_block_delta", {"type": "content_block_delta", "index": idx, "delta": {"type": "input_json_delta", "partial_json": json.dumps(blk["input"], ensure_ascii=False)}})
+                        _send_sse("content_block_stop", {"type": "content_block_stop", "index": idx})
+
+                _send_sse("message_delta", {"type": "message_delta", "delta": {"stop_reason": stop_reason, "stop_sequence": None}, "usage": {"output_tokens": out_tok}})
+                _send_sse("message_stop", {"type": "message_stop"})
+                self.wfile.flush()
+            except Exception:
+                pass
+        else:
+            res_obj = {
+                "id": msg_id,
+                "type": "message",
+                "role": "assistant",
+                "model": raw_model,
+                "content": content_blocks,
+                "stop_reason": stop_reason,
+                "stop_sequence": None,
+                "usage": {"input_tokens": in_tok, "output_tokens": out_tok}
+            }
+            out_b = json.dumps(res_obj, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(out_b)))
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(out_b)
 
     def handle_chat_completions(self, body):
         t0 = time.time()
