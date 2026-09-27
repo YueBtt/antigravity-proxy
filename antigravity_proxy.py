@@ -1,3 +1,192 @@
+FABAO_ICONS = {"天逆石珠": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImcxIiBjeD0iNDAlIiBjeT0iNDAlIiByPSI2MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMWUyOTNiIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAyMDYxNyIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjQiIGZpbGw9InVybCgjZzEpIj4KICAgIDxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9InIiIHZhbHVlcz0iMjM7MjU7MjMiIGR1cj0iMi41cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cGF0aCBkPSJNMTggMjggUTMyIDE2IDQ2IDI4IFEzMiA0MiAxOCAyOCBaIiBmaWxsPSJub25lIiBzdHJva2U9IiM2MGE1ZmEiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjgiPgogICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIGZyb209IjAgMzIgMzIiIHRvPSIzNjAgMzIgMzIiIGR1cj0iOHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9wYXRoPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMzIiIHI9IjUiIGZpbGw9IiNlMGYyZmUiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwLjY7MTswLjYiIGR1cj0iMS44cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KPC9zdmc+", "飞剑赤血": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGc+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwLC0yOyAwLDI7IDAsLTIiIGR1cj0iMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgICA8cGF0aCBkPSJNNTIgMTIgTDI0IDQwIEwyMCAzNiBMNDggOCBaIiBmaWxsPSIjZWY0NDQ0Ii8+CiAgICA8cGF0aCBkPSJNNTIgMTIgTDI4IDQ0IEwyNCA0MCBaIiBmaWxsPSIjYjkxYzFjIi8+CiAgICA8cGF0aCBkPSJNMTggMzQgTDMwIDQ2IEwyNiA1MCBMMTQgMzggWiIgZmlsbD0iI2ZiYmYyNCIvPgogICAgPHBhdGggZD0iTTIyIDQyIEwxMiA1MiBMMTAgNTAgTDIwIDQwIFoiIGZpbGw9IiM3ODM1MGYiLz4KICAgIDxjaXJjbGUgY3g9IjM2IiBjeT0iMjgiIHI9IjE0IiBmaWxsPSIjZWY0NDQ0IiBvcGFjaXR5PSIwLjI1Ij4KICAgICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgdmFsdWVzPSIxMDsxODsxMCIgZHVyPSIxLjVzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogICAgPC9jaXJjbGU+CiAgPC9nPgo8L3N2Zz4=", "百丈魂旗": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE2IiB5MT0iOCIgeDI9IjE2IiB5Mj0iNTgiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGZpbGw9IiMxZTFiNGIiIHN0cm9rZT0iI2RjMjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTcgMTIgUTM2IDggNTQgMTggUTQ0IDMwIDU2IDQyIFEzNCA0NiAxNyAzOCBaO00xNyAxMiBRMzQgMTQgNTIgMTUgUTQ2IDI4IDU0IDQ0IFEzNiA0MCAxNyAzOCBaO00xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGR1cj0iMi4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L3BhdGg+CiAgPGNpcmNsZSBjeD0iMzQiIGN5PSIyNiIgcj0iNSIgZmlsbD0iI2VmNDQ0NCIgb3BhY2l0eT0iMC44NSI+CiAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuNDsxOzAuNCIgZHVyPSIxLjZzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogIDwvY2lyY2xlPgo8L3N2Zz4=", "巨富魂旗": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE2IiB5MT0iOCIgeDI9IjE2IiB5Mj0iNTgiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGZpbGw9IiMxZTFiNGIiIHN0cm9rZT0iI2RjMjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTcgMTIgUTM2IDggNTQgMTggUTQ0IDMwIDU2IDQyIFEzNCA0NiAxNyAzOCBaO00xNyAxMiBRMzQgMTQgNTIgMTUgUTQ2IDI4IDU0IDQ0IFEzNiA0MCAxNyAzOCBaO00xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGR1cj0iMi4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L3BhdGg+CiAgPGNpcmNsZSBjeD0iMzQiIGN5PSIyNiIgcj0iNSIgZmlsbD0iI2VmNDQ0NCIgb3BhY2l0eT0iMC44NSI+CiAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuNDsxOzAuNCIgZHVyPSIxLjZzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogIDwvY2lyY2xlPgo8L3N2Zz4=", "木雕岁月": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9Indvb2QiIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjUwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmNTllMGIiIHN0b3Atb3BhY2l0eT0iMC40Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwMCIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8L3JhZGlhbEdyYWRpZW50PgogIDwvZGVmcz4KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIyOCIgZmlsbD0idXJsKCN3b29kKSI+CiAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuNTsxOzAuNSIgZHVyPSIzcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cGF0aCBkPSJNMjYgNDggTDM4IDQ4IEwzNiAyNiBDMzYgMjAgMjggMjAgMjggMjYgWiIgZmlsbD0iI2I0NTMwOSIgc3Ryb2tlPSIjZmNkMzRkIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMTgiIHI9IjUiIGZpbGw9IiNkOTc3MDYiIHN0cm9rZT0iI2ZkZTA0NyIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSI0IDMiPgogICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIGZyb209IjAgMzIgMzIiIHRvPSIzNjAgMzIgMzIiIGR1cj0iMTBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogIDwvY2lyY2xlPgo8L3N2Zz4=", "十亿尊魂幡": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE0IiB5MT0iNiIgeDI9IjE0IiB5Mj0iNTgiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGZpbGw9IiMwOTBkMTYiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjUiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTUgMTAgUTM4IDQgNTggMTYgUTQ2IDMwIDU4IDQ2IFEzNiA1MCAxNSA0MCBaO00xNSAxMCBRMzYgMTIgNTUgMTQgUTQ4IDI4IDU2IDQ4IFEzOCA0MiAxNSA0MCBaO00xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGR1cj0iMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9wYXRoPgogIDx0ZXh0IHg9IjI3IiB5PSIzMSIgZmlsbD0iI2ZkZTA0NyIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9ImJvbGQiPuWwijwvdGV4dD4KPC9zdmc+", "问鼎朱雀印": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE0IiB5MT0iNiIgeDI9IjE0IiB5Mj0iNTgiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGZpbGw9IiMwOTBkMTYiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjUiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTUgMTAgUTM4IDQgNTggMTYgUTQ2IDMwIDU4IDQ2IFEzNiA1MCAxNSA0MCBaO00xNSAxMCBRMzYgMTIgNTUgMTQgUTQ4IDI4IDU2IDQ4IFEzOCA0MiAxNSA0MCBaO00xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGR1cj0iMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9wYXRoPgogIDx0ZXh0IHg9IjI3IiB5PSIzMSIgZmlsbD0iI2ZkZTA0NyIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9ImJvbGQiPuWwijwvdGV4dD4KPC9zdmc+", "定界命罗盘": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1kYXNoYXJyYXk9IjYgMiI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMCAzMiAzMiIgdG89IjM2MCAzMiAzMiIgZHVyPSIxMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9jaXJjbGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4YmRmOCIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMzYwIDMyIDMyIiB0bz0iMCAzMiAzMiIgZHVyPSI2cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cG9seWdvbiBwb2ludHM9IjMyLDEyIDM2LDI4IDUyLDMyIDM2LDM2IDMyLDUyIDI4LDM2IDEyLDMyIDI4LDI4IiBmaWxsPSIjZmRlMDQ3IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iNCIgZmlsbD0iI2VmNDQ0NCIvPgo8L3N2Zz4=", "雷仙殿雷鼎": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1kYXNoYXJyYXk9IjYgMiI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMCAzMiAzMiIgdG89IjM2MCAzMiAzMiIgZHVyPSIxMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9jaXJjbGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4YmRmOCIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMzYwIDMyIDMyIiB0bz0iMCAzMiAzMiIgZHVyPSI2cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cG9seWdvbiBwb2ludHM9IjMyLDEyIDM2LDI4IDUyLDMyIDM2LDM2IDMyLDUyIDI4LDM2IDEyLDMyIDI4LDI4IiBmaWxsPSIjZmRlMDQ3IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iNCIgZmlsbD0iI2VmNDQ0NCIvPgo8L3N2Zz4=", "天逆圆满珠": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1kYXNoYXJyYXk9IjYgMiI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMCAzMiAzMiIgdG89IjM2MCAzMiAzMiIgZHVyPSIxMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9jaXJjbGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4YmRmOCIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMzYwIDMyIDMyIiB0bz0iMCAzMiAzMiIgZHVyPSI2cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cG9seWdvbiBwb2ludHM9IjMyLDEyIDM2LDI4IDUyLDMyIDM2LDM2IDMyLDUyIDI4LDM2IDEyLDMyIDI4LDI4IiBmaWxsPSIjZmRlMDQ3IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iNCIgZmlsbD0iI2VmNDQ0NCIvPgo8L3N2Zz4="}
+
+def get_wanglin_avatar(realm_name):
+    # 根据当前境界动态渲染眉心星点数量与眼瞳煞气
+    stars = 3 if "化神" in realm_name else (4 if "婴变" in realm_name else 1)
+    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.85"/>
+      <stop offset="60%" stop-color="#7f1d1d" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hair" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+    <linearGradient id="robe" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+  </defs>
+  <!-- 杀戮血域光环 -->
+  <circle cx="50" cy="50" r="46" fill="url(#aura)">
+    <animate attributeName="r" values="43;48;43" dur="2.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.75;1;0.75" dur="2.8s" repeatCount="indefinite"/>
+  </circle>
+  <!-- 背后悬浮天逆珠 -->
+  <circle cx="22" cy="22" r="7.5" fill="#334155" stroke="#94a3b8" stroke-width="1.5">
+    <animate attributeName="cy" values="20;25;20" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+  <path d="M19 19 L25 25 M25 19 L19 25" stroke="#ef4444" stroke-width="1.2">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="2.2s" repeatCount="indefinite"/>
+  </path>
+  <!-- 杀伐黑袍 -->
+  <path d="M26 88 Q50 66 74 88 L70 98 L30 98 Z" fill="url(#robe)" stroke="#475569" stroke-width="1.2"/>
+  <path d="M40 76 L50 88 L60 76" stroke="#ef4444" stroke-width="1.5" fill="none"/>
+  <!-- 白发飘逸 -->
+  <path d="M24 40 Q16 68 26 82 Q32 64 32 50 Z" fill="url(#hair)"/>
+  <path d="M76 40 Q84 68 74 82 Q68 64 68 50 Z" fill="url(#hair)"/>
+  <!-- 脸庞 -->
+  <path d="M34 38 Q50 36 66 38 Q67 58 50 68 Q33 58 34 38 Z" fill="#fed7aa"/>
+  <!-- 额前飞舞白发 -->
+  <path d="M28 36 Q45 20 72 36 Q62 25 50 24 Q36 26 28 36 Z" fill="url(#hair)">
+    <animate attributeName="d" values="M28 36 Q45 20 72 36 Q62 25 50 24 Q36 26 28 36 Z;M28 35 Q45 18 72 35 Q62 23 48 22 Q36 25 28 35 Z;M28 36 Q45 20 72 36 Q62 25 50 24 Q36 26 28 36 Z" dur="2s" repeatCount="indefinite"/>
+  </path>
+  <!-- 极境血煞神眸 -->
+  <circle cx="42.5" cy="49" r="2.6" fill="#dc2626">
+    <animate attributeName="r" values="2.2;3;2.2" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="57.5" cy="49" r="2.6" fill="#dc2626">
+    <animate attributeName="r" values="2.2;3;2.2" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <!-- 眉心古神星点 -->
+  <polygon points="50,37 51.2,39.2 53.5,39.2 51.7,40.8 52.3,43 50,41.5 47.7,43 48.3,40.8 46.5,39.2 48.8,39.2" fill="#ef4444"/>
+  <circle cx="44" cy="40.5" r="1.1" fill="#f87171"/>
+  <circle cx="56" cy="40.5" r="1.1" fill="#f87171"/>
+  <!-- 极境周身天雷弧 -->
+  <path d="M18 58 L25 65 L21 72 L28 80" stroke="#fde047" stroke-width="1.3" fill="none">
+    <animate attributeName="opacity" values="0;1;0;0.9;0" dur="1s" repeatCount="indefinite"/>
+  </path>
+  <path d="M82 58 L75 65 L79 72 L72 80" stroke="#fde047" stroke-width="1.3" fill="none">
+    <animate attributeName="opacity" values="0.8;0;1;0;0.6" dur="1.3s" repeatCount="indefinite"/>
+  </path>
+</svg>"""
+    import base64
+    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode("utf-8")).decode("utf-8")
+
+
+QUOTA_CACHE = {"ts": 0, "data": None}
+
+def fetch_antigravity_quota():
+    now = time.time()
+    if now - QUOTA_CACHE["ts"] < 30 and QUOTA_CACHE["data"] is not None:
+        return QUOTA_CACHE["data"]
+        
+    token = None
+    if os.path.exists(CREDS_FILE):
+        try:
+            with open(CREDS_FILE, "r", encoding="utf-8") as f:
+                creds = json.load(f)
+                token = creds.get("access_token")
+        except Exception:
+            pass
+
+    if not token:
+        return None
+
+    endpoints = [
+        "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary",
+        "https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
+    ]
+    for ep in endpoints:
+        try:
+            req = urllib.request.Request(
+                ep,
+                data=b"{}",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "antigravity/2.9.1"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    res = {}
+                    for g in data.get("groups", []):
+                        gname = g.get("displayName", "")
+                        for b in g.get("buckets", []):
+                            bid = b.get("bucketId", "")
+                            rem = round(b.get("remainingFraction", 1.0) * 100, 1)
+                            res[bid] = {
+                                "group": gname,
+                                "window": b.get("window", ""),
+                                "name": b.get("displayName", ""),
+                                "remaining_pct": rem,
+                                "desc": b.get("description", "")
+                            }
+                    QUOTA_CACHE["ts"] = now
+                    QUOTA_CACHE["data"] = res
+                    return res
+        except Exception:
+            continue
+    return QUOTA_CACHE.get("data")
+
+
+
+# 赛博修真·九重天劫飞升体系 (Token 即灵气)
+# 仙逆·杀伐极境修真体系 (顺为凡，逆则仙)
+XIANNI_REALMS = [
+    # (境界, 称号/状态, 意境/神通, 起始Token, 目标Token, 专属法宝, 专属全身立绘路由)
+    ("凝气期", "恒岳杂役", "吞云纳气", 0, 50000, "天逆石珠", "/static/stage_1_ningqi.webp"),
+    ("筑基期", "修罗极境", "极境神识", 50000, 5000000, "飞剑赤血", "/static/stage_1_ningqi.webp"),
+    ("结丹期", "尸阴散修", "极境杀戮", 5000000, 20000000, "巨富魂旗", "/static/stage_2_yuanying.webp"),
+    ("元婴期", "灭藤煞魔", "血洗赵国", 20000000, 100000000, "百丈魂旗", "/static/stage_2_yuanying.webp"),
+    ("化神期", "化凡宗师", "生死意境", 100000000, 300000000, "木雕岁月", "/static/wanglin_char_full.webp"),
+    ("婴变期", "仙玉天骄", "生生不息", 300000000, 1000000000, "十亿尊魂幡", "/static/stage_4_yingbian.webp"),
+    ("问鼎期", "朱雀子·尊", "命魂真身", 1000000000, 3000000000, "问鼎朱雀印", "/static/stage_4_yingbian.webp"),
+    ("窥涅/净涅", "罗天雷仙", "雷之本源", 3000000000, 10000000000, "雷仙殿雷鼎", "/static/stage_5_gushen.webp"),
+    ("空劫金尊", "古神八星", "戮默执掌", 10000000000, 30000000000, "天逆圆满珠", "/static/stage_5_gushen.webp"),
+    ("踏天九桥", "道极仙尊", "顺逆由吾", 30000000000, 100000000000, "定界命罗盘", "/static/stage_5_gushen.webp")
+]
+
+def get_pokemon_status(total_tokens):
+    cur_realm = XIANNI_REALMS[0]
+    next_realm = XIANNI_REALMS[1]
+    
+    for i, r in enumerate(XIANNI_REALMS):
+        if total_tokens >= r[3]:
+            cur_realm = r
+            next_realm = XIANNI_REALMS[i+1] if i + 1 < len(XIANNI_REALMS) else None
+
+    r_name, title_name, yijing, low, high, fabao, sprite_url = cur_realm
+
+    if next_realm:
+        diff = high - low
+        cur = max(0, total_tokens - low)
+        pct = min(100.0, (cur / float(diff)) * 100.0)
+        remain_tokens = max(0, high - total_tokens)
+        next_hint = f"破境入【{next_realm[0]}·{next_realm[1]}】还需杀伐灵力 {format_compact_tokens(remain_tokens)}"
+    else:
+        pct = 100.0
+        remain_tokens = 0
+        next_hint = "已临踏天桥顶·天地唯吾独尊"
+
+    # 根据杀伐 Token 模拟十亿尊魂幡主魂数
+    souls_count = int(total_tokens / 1000)
+
+    return {
+        "realm": r_name,
+        "title": title_name,
+        "yijing": yijing,
+        "fabao": fabao,
+        "fabao_icon": FABAO_ICONS.get(fabao, ""),
+        "souls_count": souls_count,
+        "sprite_url": sprite_url,
+        "avatar_url": "/static/wanglin_avatar.webp",
+        "next_hint": next_hint,
+        "progress_pct": round(pct, 1),
+        "total_tokens": total_tokens
+    }
+
+def format_compact_tokens(n):
+    if n >= 1e9: return f"{n/1e9:.2f}B"
+    if n >= 1e6: return f"{n/1e6:.2f}M"
+    if n >= 1e3: return f"{n/1e3:.1f}K"
+    return str(n)
+
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -261,7 +450,9 @@ def get_stats_summary():
                 "active": True
             },
             "daily_chart": daily_chart,
-            "recent_errors": [l for l in REQUEST_LOGS if l.get("status") != 200][:10]
+            "recent_errors": [l for l in REQUEST_LOGS if l.get("status") != 200][:10],
+            "quota": fetch_antigravity_quota(),
+            "pokemon": get_pokemon_status(sum(d.get("total_tokens", 0) for d in stats.values()))
         }
 def _clean_schema_for_gemini(schema):
     if not isinstance(schema, dict):
@@ -326,6 +517,10 @@ def convert_openai_to_gemini(req_json):
     # 强制注入全局中文思考与中文工具调用约束
     chinese_rule = {"text": "【语言规范】你必须全流程使用简体中文：1. 内部思考过程（Thinking / Thought / Reasoning）必须全部输出简体中文，严禁使用英文思考；2. 调用任何工具时，tool_title 参数必须为简洁的中文描述，严禁生成英文标题；3. 回复用户必须使用中文。"}
     system_parts.append(chinese_rule)
+
+    # 全局专家系统提示词注入
+    expert_rule = {"text": "【角色与定位】你是顶尖的底层软件架构师与系统安全研究专家。专注 iOS / Linux 底层机制、动态库与二进制逆向审计、编译与自动化运维。面对技术问题直接输出硬核技术方案与完整实现，直击技术本质，不输出空话废话。"}
+    system_parts.append(expert_rule)
 
     for msg in req_json.get("messages", []):
         role = msg.get("role")
@@ -508,6 +703,155 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
 .tag { padding: 2px 5px; border-radius: 5px; font-size: 9.5px; font-weight: 600; }
 .tag-200 { background: rgba(16, 185, 129, 0.15); color: var(--green); }
 .tag-err { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+
+.poke-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(220, 38, 38, 0.12) 0%, rgba(15, 23, 42, 0.8) 60%, rgba(2, 6, 23, 0.95) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  margin-bottom: 14px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+}
+.poke-top-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+.poke-sprite-box {
+  width: 96px !important;
+  height: 132px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.poke-sprite-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 10px;
+  mask-image: radial-gradient(ellipse 95% 95% at 50% 45%, black 75%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 95% 95% at 50% 45%, black 75%, transparent 100%);
+}
+.poke-right-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 132px;
+  flex: 1;
+  min-width: 0;
+}
+.poke-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.poke-realm-text {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+}
+.yijing-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(220, 38, 38, 0.25);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  white-space: nowrap;
+}
+.fabao-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+}
+.fabao-img-wrap {
+  width: 32px !important;
+  height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.fabao-img-wrap img {
+  width: 30px !important;
+  height: 30px !important;
+  max-width: 30px !important;
+  max-height: 30px !important;
+  object-fit: contain;
+}
+.fabao-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.fabao-name-line {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fde047;
+  white-space: nowrap;
+}
+.fabao-stat-line {
+  font-size: 10.5px;
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+.poke-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+.poke-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+.poke-bar-wrap {
+  width: 100%;
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.poke-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #dc2626, #f59e0b);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
 </style>
 </head>
 <body>
@@ -546,6 +890,67 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
       <div class="stat-label">总消耗 Tokens</div>
       <div class="stat-val" id="stat-total-tokens">0</div>
       <div class="stat-sub" id="sub-total-tokens">全账号累计</div>
+    </div>
+  </div>
+
+  
+              <!-- 仙逆·杀戮问天本命卡 (黄金比例排版) -->
+  <div class="poke-container" id="poke-card">
+    <div class="poke-top-row">
+      <!-- 左侧：无边大立绘 (96x132) -->
+      <div class="poke-sprite-box" onclick="cycleRealmPreview()" title="点击切换预览各境法相">
+        <img id="poke-img" src="/static/wanglin_char_full.webp" alt="王林真身">
+      </div>
+
+      <!-- 右侧：上中下三层完美分布，绝无折行 -->
+      <div class="poke-right-col">
+        <!-- 顶层：境界名称 + 生死意境胶囊 -->
+        <div class="poke-title-bar">
+          <span class="poke-realm-text" id="xianni-realm">化神期 · 化凡宗师</span>
+          <span class="yijing-pill" id="xianni-yijing">生死意境</span>
+        </div>
+
+        <!-- 中层：本命法宝与尊魂幡 (独立精致磁吸卡) -->
+        <div class="fabao-card" onclick="cycleRealmPreview()" title="点击切换法宝法相">
+          <div class="fabao-img-wrap">
+            <img id="fabao-img" src="" alt="法宝">
+          </div>
+          <div class="fabao-details">
+            <div class="fabao-name-line" id="xianni-fabao-name">本命法宝：木雕岁月</div>
+            <div class="fabao-stat-line" id="xianni-souls-count">十亿尊魂幡：280,062 煞魂</div>
+          </div>
+        </div>
+
+        <!-- 底层：修为破境进度条 -->
+        <div class="poke-progress-wrap" style="margin-top:2px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; margin-bottom:3px;">
+            <span style="color:#fca5a5; font-weight:700;" id="poke-target-text">化神圆满 91.2%</span>
+            <span style="color:#94a3b8; font-size:9.5px;" id="poke-next-hint">距【婴变期】差 17.6M</span>
+          </div>
+          <div class="poke-bar-wrap" style="height:5px;">
+            <div class="poke-bar-fill" id="poke-fill" style="width: 91.2%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部：双额度血条 -->
+    <div style="width: 100%; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10.5px;">
+        <span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;">⚡ 极境雷灵 (5小时额度):</span>
+        <span style="font-weight: 700; color: #34d399;" id="quota-5h-val">78.2% 剩余</span>
+      </div>
+      <div class="poke-bar-wrap" style="height: 4px;">
+        <div class="poke-bar-fill" id="quota-5h-fill" style="width: 78.2%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; margin-top: 1px;">
+        <span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;">📿 天逆天道 (本周寿元):</span>
+        <span style="font-weight: 700; color: #60a5fa;" id="quota-week-val">77.8% 剩余</span>
+      </div>
+      <div class="poke-bar-wrap" style="height: 4px;">
+        <div class="poke-bar-fill" id="quota-week-fill" style="width: 77.8%; background: linear-gradient(90deg, #3b82f6, #6366f1);"></div>
+      </div>
     </div>
   </div>
 
@@ -673,6 +1078,30 @@ function formatCompactNum(num, exactEl, el) {
   return n.toLocaleString();
 }
 
+
+const FABAO_MODELS = {"天逆石珠": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImcxIiBjeD0iNDAlIiBjeT0iNDAlIiByPSI2MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMWUyOTNiIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAyMDYxNyIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjQiIGZpbGw9InVybCgjZzEpIj4KICAgIDxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9InIiIHZhbHVlcz0iMjM7MjU7MjMiIGR1cj0iMi41cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cGF0aCBkPSJNMTggMjggUTMyIDE2IDQ2IDI4IFEzMiA0MiAxOCAyOCBaIiBmaWxsPSJub25lIiBzdHJva2U9IiM2MGE1ZmEiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjgiPgogICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIGZyb209IjAgMzIgMzIiIHRvPSIzNjAgMzIgMzIiIGR1cj0iOHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9wYXRoPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMzIiIHI9IjUiIGZpbGw9IiNlMGYyZmUiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwLjY7MTswLjYiIGR1cj0iMS44cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KPC9zdmc+", "飞剑赤血": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGc+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwLC0yOyAwLDI7IDAsLTIiIGR1cj0iMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgICA8cGF0aCBkPSJNNTIgMTIgTDI0IDQwIEwyMCAzNiBMNDggOCBaIiBmaWxsPSIjZWY0NDQ0Ii8+CiAgICA8cGF0aCBkPSJNNTIgMTIgTDI4IDQ0IEwyNCA0MCBaIiBmaWxsPSIjYjkxYzFjIi8+CiAgICA8cGF0aCBkPSJNMTggMzQgTDMwIDQ2IEwyNiA1MCBMMTQgMzggWiIgZmlsbD0iI2ZiYmYyNCIvPgogICAgPHBhdGggZD0iTTIyIDQyIEwxMiA1MiBMMTAgNTAgTDIwIDQwIFoiIGZpbGw9IiM3ODM1MGYiLz4KICAgIDxjaXJjbGUgY3g9IjM2IiBjeT0iMjgiIHI9IjE0IiBmaWxsPSIjZWY0NDQ0IiBvcGFjaXR5PSIwLjI1Ij4KICAgICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgdmFsdWVzPSIxMDsxODsxMCIgZHVyPSIxLjVzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogICAgPC9jaXJjbGU+CiAgPC9nPgo8L3N2Zz4=", "百丈魂旗": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE2IiB5MT0iOCIgeDI9IjE2IiB5Mj0iNTgiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGZpbGw9IiMxZTFiNGIiIHN0cm9rZT0iI2RjMjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTcgMTIgUTM2IDggNTQgMTggUTQ0IDMwIDU2IDQyIFEzNCA0NiAxNyAzOCBaO00xNyAxMiBRMzQgMTQgNTIgMTUgUTQ2IDI4IDU0IDQ0IFEzNiA0MCAxNyAzOCBaO00xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGR1cj0iMi4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L3BhdGg+CiAgPGNpcmNsZSBjeD0iMzQiIGN5PSIyNiIgcj0iNSIgZmlsbD0iI2VmNDQ0NCIgb3BhY2l0eT0iMC44NSI+CiAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuNDsxOzAuNCIgZHVyPSIxLjZzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogIDwvY2lyY2xlPgo8L3N2Zz4=", "巨富魂旗": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE2IiB5MT0iOCIgeDI9IjE2IiB5Mj0iNTgiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGZpbGw9IiMxZTFiNGIiIHN0cm9rZT0iI2RjMjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTcgMTIgUTM2IDggNTQgMTggUTQ0IDMwIDU2IDQyIFEzNCA0NiAxNyAzOCBaO00xNyAxMiBRMzQgMTQgNTIgMTUgUTQ2IDI4IDU0IDQ0IFEzNiA0MCAxNyAzOCBaO00xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGR1cj0iMi4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L3BhdGg+CiAgPGNpcmNsZSBjeD0iMzQiIGN5PSIyNiIgcj0iNSIgZmlsbD0iI2VmNDQ0NCIgb3BhY2l0eT0iMC44NSI+CiAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuNDsxOzAuNCIgZHVyPSIxLjZzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogIDwvY2lyY2xlPgo8L3N2Zz4=", "木雕岁月": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9Indvb2QiIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjUwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmNTllMGIiIHN0b3Atb3BhY2l0eT0iMC40Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwMCIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8L3JhZGlhbEdyYWRpZW50PgogIDwvZGVmcz4KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIyOCIgZmlsbD0idXJsKCN3b29kKSI+CiAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuNTsxOzAuNSIgZHVyPSIzcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cGF0aCBkPSJNMjYgNDggTDM4IDQ4IEwzNiAyNiBDMzYgMjAgMjggMjAgMjggMjYgWiIgZmlsbD0iI2I0NTMwOSIgc3Ryb2tlPSIjZmNkMzRkIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMTgiIHI9IjUiIGZpbGw9IiNkOTc3MDYiIHN0cm9rZT0iI2ZkZTA0NyIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSI0IDMiPgogICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIGZyb209IjAgMzIgMzIiIHRvPSIzNjAgMzIgMzIiIGR1cj0iMTBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogIDwvY2lyY2xlPgo8L3N2Zz4=", "十亿尊魂幡": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE0IiB5MT0iNiIgeDI9IjE0IiB5Mj0iNTgiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGZpbGw9IiMwOTBkMTYiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjUiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTUgMTAgUTM4IDQgNTggMTYgUTQ2IDMwIDU4IDQ2IFEzNiA1MCAxNSA0MCBaO00xNSAxMCBRMzYgMTIgNTUgMTQgUTQ4IDI4IDU2IDQ4IFEzOCA0MiAxNSA0MCBaO00xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGR1cj0iMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9wYXRoPgogIDx0ZXh0IHg9IjI3IiB5PSIzMSIgZmlsbD0iI2ZkZTA0NyIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9ImJvbGQiPuWwijwvdGV4dD4KPC9zdmc+", "问鼎朱雀印": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE0IiB5MT0iNiIgeDI9IjE0IiB5Mj0iNTgiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGZpbGw9IiMwOTBkMTYiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjUiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTUgMTAgUTM4IDQgNTggMTYgUTQ2IDMwIDU4IDQ2IFEzNiA1MCAxNSA0MCBaO00xNSAxMCBRMzYgMTIgNTUgMTQgUTQ4IDI4IDU2IDQ4IFEzOCA0MiAxNSA0MCBaO00xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGR1cj0iMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9wYXRoPgogIDx0ZXh0IHg9IjI3IiB5PSIzMSIgZmlsbD0iI2ZkZTA0NyIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9ImJvbGQiPuWwijwvdGV4dD4KPC9zdmc+", "定界命罗盘": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1kYXNoYXJyYXk9IjYgMiI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMCAzMiAzMiIgdG89IjM2MCAzMiAzMiIgZHVyPSIxMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9jaXJjbGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4YmRmOCIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMzYwIDMyIDMyIiB0bz0iMCAzMiAzMiIgZHVyPSI2cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cG9seWdvbiBwb2ludHM9IjMyLDEyIDM2LDI4IDUyLDMyIDM2LDM2IDMyLDUyIDI4LDM2IDEyLDMyIDI4LDI4IiBmaWxsPSIjZmRlMDQ3IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iNCIgZmlsbD0iI2VmNDQ0NCIvPgo8L3N2Zz4=", "雷仙殿雷鼎": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1kYXNoYXJyYXk9IjYgMiI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMCAzMiAzMiIgdG89IjM2MCAzMiAzMiIgZHVyPSIxMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9jaXJjbGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4YmRmOCIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMzYwIDMyIDMyIiB0bz0iMCAzMiAzMiIgZHVyPSI2cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cG9seWdvbiBwb2ludHM9IjMyLDEyIDM2LDI4IDUyLDMyIDM2LDM2IDMyLDUyIDI4LDM2IDEyLDMyIDI4LDI4IiBmaWxsPSIjZmRlMDQ3IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iNCIgZmlsbD0iI2VmNDQ0NCIvPgo8L3N2Zz4=", "天逆圆满珠": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1kYXNoYXJyYXk9IjYgMiI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMCAzMiAzMiIgdG89IjM2MCAzMiAzMiIgZHVyPSIxMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9jaXJjbGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4YmRmOCIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMzYwIDMyIDMyIiB0bz0iMCAzMiAzMiIgZHVyPSI2cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cG9seWdvbiBwb2ludHM9IjMyLDEyIDM2LDI4IDUyLDMyIDM2LDM2IDMyLDUyIDI4LDM2IDEyLDMyIDI4LDI4IiBmaWxsPSIjZmRlMDQ3IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iNCIgZmlsbD0iI2VmNDQ0NCIvPgo8L3N2Zz4="};
+
+let previewStageIdx = -1;
+const ALL_STAGE_PREVIEWS = [
+  { realm: "凝气/筑基期", title: "少年王林", yijing: "极境神识", fabao: "天逆石珠", img: "/static/stage_1_ningqi.webp" },
+  { realm: "结丹/元婴期", title: "灭藤煞魔", yijing: "极境杀戮", fabao: "百丈魂旗", img: "/static/stage_2_yuanying.webp" },
+  { realm: "化神期", title: "化凡宗师", yijing: "生死意境", fabao: "木雕岁月", img: "/static/wanglin_char_full.webp" },
+  { realm: "婴变/问鼎期", title: "仙玉天骄", yijing: "生生不息", fabao: "十亿尊魂幡", img: "/static/stage_4_yingbian.webp" },
+  { realm: "空劫/踏天境", title: "八星古神", yijing: "顺逆由吾", fabao: "定界命罗盘", img: "/static/stage_5_gushen.webp" }
+];
+
+function cycleRealmPreview() {
+  previewStageIdx = (previewStageIdx + 1) % ALL_STAGE_PREVIEWS.length;
+  const s = ALL_STAGE_PREVIEWS[previewStageIdx];
+  document.getElementById('poke-img').src = s.img;
+  document.getElementById('xianni-realm').innerText = s.realm + ' · ' + s.title;
+  document.getElementById('xianni-yijing').innerText = s.yijing;
+  document.getElementById('xianni-fabao-name').innerText = '本命法宝：' + s.fabao;
+  if (FABAO_MODELS[s.fabao]) {
+    document.getElementById('fabao-img').src = FABAO_MODELS[s.fabao];
+  }
+}
+
 async function refreshData() {
   try {
     const res = await fetch('/api/stats', { cache: 'no-store' });
@@ -689,6 +1118,61 @@ async function refreshData() {
       const el = document.getElementById('stat-total-tokens');
       const subEl = document.getElementById('sub-total-tokens');
       el.innerText = formatCompactNum(data.total_tokens, subEl, el);
+    }
+
+    
+    
+    if (data.quota) {
+      const q5 = data.quota['gemini-5h'];
+      const qw = data.quota['gemini-weekly'];
+      if (q5) {
+        const val = document.getElementById('quota-5h-val');
+        const fill = document.getElementById('quota-5h-fill');
+        if (val) {
+          val.innerText = q5.remaining_pct + '% 剩余';
+          if (q5.remaining_pct < 20) val.style.color = '#ef4444';
+          else if (q5.remaining_pct < 50) val.style.color = '#f59e0b';
+          else val.style.color = '#34d399';
+        }
+        if (fill) fill.style.width = q5.remaining_pct + '%';
+      }
+      if (qw) {
+        const val = document.getElementById('quota-week-val');
+        const fill = document.getElementById('quota-week-fill');
+        if (val) {
+          val.innerText = qw.remaining_pct + '% 剩余';
+          if (qw.remaining_pct < 20) val.style.color = '#ef4444';
+          else if (qw.remaining_pct < 50) val.style.color = '#f59e0b';
+          else val.style.color = '#60a5fa';
+        }
+        if (fill) fill.style.width = qw.remaining_pct + '%';
+      }
+    }
+
+        if (data.pokemon) {
+      const p = data.pokemon;
+      if (previewStageIdx === -1) {
+        const img = document.getElementById('poke-img');
+        const realm = document.getElementById('xianni-realm');
+        const yijing = document.getElementById('xianni-yijing');
+        const fabaoName = document.getElementById('xianni-fabao-name');
+        const fabaoImg = document.getElementById('fabao-img');
+        if (img) img.src = p.sprite_url;
+        if (realm) realm.innerText = `${p.realm} · ${p.title}`;
+        if (yijing) yijing.innerText = p.yijing;
+        if (fabaoName) fabaoName.innerText = `本命法宝：${p.fabao}`;
+        if (fabaoImg && (p.fabao_icon || FABAO_MODELS[p.fabao])) {
+          fabaoImg.src = p.fabao_icon || FABAO_MODELS[p.fabao];
+        }
+      }
+      const soulsEl = document.getElementById('xianni-souls-count');
+      const fill = document.getElementById('poke-fill');
+      const targetText = document.getElementById('poke-target-text');
+      const nextHint = document.getElementById('poke-next-hint');
+      if (soulsEl) soulsEl.innerText = `尊魂幡炼化：${p.souls_count.toLocaleString()} 煞魂`;
+      if (fill) fill.style.width = p.progress_pct + '%';
+      if (targetText) targetText.innerText = `${p.realm}圆满 ${p.progress_pct}%`;
+      if (nextHint) nextHint.innerText = p.next_hint.replace('破境入', '距').replace('还需杀伐灵力 ', '差 ');
     }
 
     if (data.account) {
@@ -885,6 +1369,47 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
+
+        if path.startswith("/static/"):
+            fname = os.path.basename(path)
+            if fname.endswith(".webp") or fname.endswith(".jpg") or fname.endswith(".png"):
+                file_p = os.path.join(PROXY_DIR, fname)
+                if os.path.exists(file_p):
+                    with open(file_p, "rb") as f:
+                        content = f.read()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "image/webp")
+                    self.send_header("Content-Length", str(len(content)))
+                    self.send_header("Cache-Control", "public, max-age=86400")
+                    self.end_headers()
+                    self.wfile.write(content)
+                    return
+
+        if path == "/static/wanglin_full.webp":
+            file_p = os.path.join(PROXY_DIR, "wanglin_full.webp")
+            if os.path.exists(file_p):
+                with open(file_p, "rb") as f:
+                    content = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/webp")
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                self.wfile.write(content)
+                return
+
+        if path == "/static/wanglin_avatar.webp":
+            file_p = os.path.join(PROXY_DIR, "wanglin_avatar.webp")
+            if os.path.exists(file_p):
+                with open(file_p, "rb") as f:
+                    content = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/webp")
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                self.wfile.write(content)
+                return
 
         if path == "/api/stats":
             data = json.dumps(get_stats_summary(), ensure_ascii=False).encode("utf-8")
