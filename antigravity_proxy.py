@@ -247,8 +247,8 @@ def get_ez_valid_token():
         except Exception:
             pass
 
-    email = acc_info.get("email", "1442285193@qq.com")
-    pwd = acc_info.get("password", "tT778899")
+    email = acc_info.get("email") or os.environ.get("EZ_EMAIL", "")
+    pwd = acc_info.get("password") or os.environ.get("EZ_PASSWORD", "")
 
     if email and pwd:
         try:
