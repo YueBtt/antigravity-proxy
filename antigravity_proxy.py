@@ -214,6 +214,9 @@ CREDS_FILE = os.path.join(PROXY_DIR, "credentials.json")
 ACCOUNTS_FILE = os.path.join(PROXY_DIR, "accounts.json")
 DAILY_STATS_FILE = os.path.join(PROXY_DIR, "daily_stats.json")
 LOGS_FILE = os.path.join(PROXY_DIR, "request_logs.json")
+EZ_TOKEN_FILE = os.path.join(PROXY_DIR, "ezcomplete_token.txt")
+EZ_SUPABASE_URL = "https://spuoimtqofhbdzosrbng.supabase.co"
+EZ_ANON_KEY = "sb_publishable_AzEVhLuIj1nSMwZvIgKw7A__Y3Ghdtl"
 
 # Google Cloud Code / Antigravity default OAuth app credentials
 # Set via environment variables GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET if custom app is desired
@@ -1515,9 +1518,19 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             return
 
-        if path == "/v1/models":
+        if path in ["/v1/models", "/ez/v1/models", "/ez/models"]:
             m_list = [{"id": m, "object": "model", "created": 1700000000, "owned_by": "google-antigravity"} for m in SUPPORTED_MODELS]
-            data = json.dumps({"object": "list", "data": m_list}).encode("utf-8")
+            ez_models = [
+                {"id": "ez-chat", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-4o-mini-2024-07-18", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "ez-gpt-4o-mini", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-image-2.5-flare", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"}
+            ]
+            if path.startswith("/ez"):
+                res_models = ez_models
+            else:
+                res_models = m_list + ez_models
+            data = json.dumps({"object": "list", "data": res_models}).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(data)))
@@ -1709,11 +1722,19 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.handle_anthropic_messages(body)
             return
 
+        if path in ["/ez/v1/chat/completions", "/ez/chat/completions"]:
+            self.handle_ezcomplete_chat(body)
+            return
+
         if path in ["/v1/chat/completions", "/chat/completions", "/v1", "/"]:
             try:
                 chk = json.loads(body.decode("utf-8"))
-                if chk.get("model") == "gemini-3.1-flash-image":
+                m_name = str(chk.get("model", "")).lower()
+                if m_name == "gemini-3.1-flash-image":
                     self.handle_image_generations(body)
+                    return
+                elif m_name.startswith("ez-") or "ezcomplete" in m_name:
+                    self.handle_ezcomplete_chat(body)
                     return
             except Exception:
                 pass
@@ -1723,6 +1744,176 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         self.send_response(404)
         self.send_header("Content-Length", "0")
         self.end_headers()
+
+    def handle_ezcomplete_chat(self, body):
+        t0 = time.time()
+        try:
+            req_json = json.loads(body.decode("utf-8"))
+        except Exception as e:
+            self.send_response(400)
+            self.send_header("Content-Type", "application/json")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": f"Invalid JSON: {e}"}).encode("utf-8"))
+            return
+
+        stream = req_json.get("stream", False)
+        raw_model = str(req_json.get("model", "gpt-4o-mini-2024-07-18"))
+
+        # 模型名转换与对齐
+        target_model = "gpt-4o-mini-2024-07-18"
+        if "flare" in raw_model or "sunburst" in raw_model or "image" in raw_model:
+            target_model = "gpt-image-2.5-flare"
+        elif "mini" in raw_model or "ez" in raw_model:
+            target_model = "gpt-4o-mini-2024-07-18"
+        elif "chat_standard" in raw_model or "gpt-4" in raw_model:
+            target_model = "chat_standard"
+
+        # 提取上下文对话
+        all_msgs = req_json.get("messages", [])
+        prompt_txt = ""
+        for m in all_msgs:
+            role = m.get("role", "user")
+            content = m.get("content", "")
+            if isinstance(content, str):
+                prompt_txt += f"{role}: {content}\n"
+            elif isinstance(content, list):
+                for p in content:
+                    if isinstance(p, dict) and p.get("type") == "text":
+                        prompt_txt += f"{role}: {p.get('text', '')}\n"
+        prompt_txt = prompt_txt.strip()
+
+        # 读取用户 Token
+        user_token = None
+        if os.path.exists(EZ_TOKEN_FILE):
+            try:
+                with open(EZ_TOKEN_FILE, "r", encoding="utf-8") as f:
+                    user_token = f.read().strip()
+            except Exception:
+                pass
+
+        if not user_token:
+            self.send_response(401)
+            self.send_header("Content-Type", "application/json")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": {"message": "EZCompleteUI Token 未配置，请先在手机上打开一次 App 自动捕获", "type": "auth_error"}}).encode("utf-8"))
+            return
+
+        ez_payload = {
+            "model": target_model,
+            "prompt_preview": prompt_txt if prompt_txt else "你好",
+            "feature_tier": "chat_mini",
+            "estimated_tokens": max(len(prompt_txt) // 2, 20),
+            "web_search": False
+        }
+
+        url = f"{EZ_SUPABASE_URL}/functions/v1/ez-chat"
+        headers = {
+            "apikey": EZ_ANON_KEY,
+            "Authorization": f"Bearer {user_token}",
+            "Content-Type": "application/json",
+            "User-Agent": "EZCompleteUI/7.1.4 (iPhone; iOS 16.0; Scale/3.00)"
+        }
+
+        try:
+            req = urllib.request.Request(url, data=json.dumps(ez_payload).encode("utf-8"), headers=headers, method="POST")
+            with urllib.request.urlopen(req, context=SSL_CTX, timeout=60) as resp:
+                ez_resp = json.loads(resp.read().decode("utf-8", errors="ignore"))
+
+            reply_text = ez_resp.get("reply", "")
+            tokens_used = ez_resp.get("actual_tokens", 50)
+            balance = ez_resp.get("balance", 0)
+
+            latency = int((time.time() - t0) * 1000)
+            log_request(f"ez:{target_model}", 200, latency, tokens_used)
+
+            chat_id = f"chatcmpl-ez-{uuid.uuid4().hex[:12]}"
+            created_time = int(time.time())
+
+            if stream:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+                self.send_header("Cache-Control", "no-cache")
+                self.send_header("Connection", "close")
+                self.send_cors()
+                self.end_headers()
+                self.close_connection = True
+
+                # 发送流式 SSE
+                chunk_obj = {
+                    "id": chat_id,
+                    "object": "chat.completion.chunk",
+                    "created": created_time,
+                    "model": raw_model,
+                    "choices": [{
+                        "index": 0,
+                        "delta": {"content": reply_text},
+                        "finish_reason": None
+                    }]
+                }
+                self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
+                
+                # 结束帧
+                end_chunk = {
+                    "id": chat_id,
+                    "object": "chat.completion.chunk",
+                    "created": created_time,
+                    "model": raw_model,
+                    "choices": [{
+                        "index": 0,
+                        "delta": {},
+                        "finish_reason": "stop"
+                    }]
+                }
+                self.wfile.write(f"data: {json.dumps(end_chunk, ensure_ascii=False)}\n\n".encode("utf-8"))
+                self.wfile.write(b"data: [DONE]\n\n")
+                self.wfile.flush()
+            else:
+                out_resp = {
+                    "id": chat_id,
+                    "object": "chat.completion",
+                    "created": created_time,
+                    "model": raw_model,
+                    "choices": [{
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": reply_text
+                        },
+                        "finish_reason": "stop"
+                    }],
+                    "usage": {
+                        "prompt_tokens": len(prompt_txt) // 3,
+                        "completion_tokens": len(reply_text) // 3,
+                        "total_tokens": tokens_used
+                    },
+                    "ez_metadata": {
+                        "balance": balance
+                    }
+                }
+                res_bytes = json.dumps(out_resp, ensure_ascii=False).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(res_bytes)))
+                self.send_header("Connection", "close")
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(res_bytes)
+
+        except urllib.error.HTTPError as he:
+            err_b = he.read().decode("utf-8", errors="ignore")
+            self.send_response(he.code)
+            self.send_header("Content-Type", "application/json")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": {"message": f"EZCompleteUI 后端错误: {err_b}", "code": he.code}}).encode("utf-8"))
+        except Exception as e:
+            self.send_response(500)
+            self.send_header("Content-Type", "application/json")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": {"message": f"EZCompleteUI 代理异常: {str(e)}"}}).encode("utf-8"))
 
     def handle_image_generations(self, body):
         t0 = time.time()
