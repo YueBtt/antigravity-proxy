@@ -1521,10 +1521,31 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         if path in ["/v1/models", "/ez/v1/models", "/ez/models"]:
             m_list = [{"id": m, "object": "model", "created": 1700000000, "owned_by": "google-antigravity"} for m in SUPPORTED_MODELS]
             ez_models = [
-                {"id": "ez-chat", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-6-astra", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-6-luna", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-6-sol", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-5.6-luna", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-5.6-sol", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-5.6-terra", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-5", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-5-pro", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-5-mini", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-4o", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-4o-mini", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
                 {"id": "gpt-4o-mini-2024-07-18", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
-                {"id": "ez-gpt-4o-mini", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
-                {"id": "gpt-image-2.5-flare", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"}
+                {"id": "gpt-4.1", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-4.1-mini", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-4.1-nano", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "o4-mini", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-image-2.5-flare", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "gpt-image-2.5-sunburst", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "chatgpt-image-latest", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "dalle3_hd", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "dalle3_standard", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "sora_pro_10s", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "sora_10s", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "ez-whisper", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "ez-chat", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"}
             ]
             if path.startswith("/ez"):
                 res_models = ez_models
@@ -1760,14 +1781,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         stream = req_json.get("stream", False)
         raw_model = str(req_json.get("model", "gpt-4o-mini-2024-07-18"))
 
-        # 模型名转换与对齐
-        target_model = "gpt-4o-mini-2024-07-18"
-        if "flare" in raw_model or "sunburst" in raw_model or "image" in raw_model:
-            target_model = "gpt-image-2.5-flare"
-        elif "mini" in raw_model or "ez" in raw_model:
+        # 如果传入的模型本身就在 EZCompleteUI 原生支持范围内，直接原样透传给 Supabase！
+        target_model = raw_model
+        if raw_model in ["ez-chat", "ez-gpt-4o-mini"]:
             target_model = "gpt-4o-mini-2024-07-18"
-        elif "chat_standard" in raw_model or "gpt-4" in raw_model:
-            target_model = "chat_standard"
 
         # 提取上下文对话
         all_msgs = req_json.get("messages", [])
