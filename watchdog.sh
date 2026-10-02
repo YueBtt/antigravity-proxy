@@ -12,7 +12,7 @@ while true; do
     RET=$?
     if [ $RET -ne 0 ]; then
         # 异常挂掉或端口未通，强制清理并释放端口
-        /usr/bin/killall -9 python3 > /dev/null 2>&1
+        /usr/bin/killall -9 python3.9 python3 > /dev/null 2>&1
         sleep 1
         # 后台无拘无束脱壳拉起
         nohup /usr/bin/python3 "$DIR/antigravity_proxy.py" >> "$LOG" 2>> "$ERR" &
