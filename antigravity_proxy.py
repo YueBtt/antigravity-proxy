@@ -1867,10 +1867,6 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.handle_anthropic_messages(body)
             return
 
-        if path in ["/ez/v1/chat/completions", "/ez/chat/completions"]:
-            self.handle_ezcomplete_chat(body)
-            return
-
         if path in ["/v1/chat/completions", "/chat/completions", "/v1", "/"]:
             try:
                 chk = json.loads(body.decode("utf-8"))
@@ -1908,9 +1904,11 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         # 如果传入的模型本身就在 EZCompleteUI 原生支持范围内，做自动别名兼容与退役重定向
         target_model = raw_model
         if "gpt-6-sol" in raw_model:
-            target_model = "gpt-6.1-sol"
+            target_model = "gpt-6-luna"
         elif "gpt-6-astra" in raw_model:
-            target_model = "gpt-6-astra"
+            target_model = "gpt-6-luna"
+        elif "gpt-5.6-sol" in raw_model:
+            target_model = "gpt-5.6-luna"
         elif raw_model in ["ez-chat", "ez-gpt-4o-mini"]:
             target_model = "gpt-4o"
         elif raw_model in ["gpt-4o-mini-2024-07-18", "gpt-4o-mini"]:
@@ -1923,19 +1921,34 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         elif "gpt-6" in target_model or "gpt-5" in target_model:
             f_tier = "chat_premium"
 
-        # 提取上下文对话
+        # 提取上下文对话（过滤掉 system 提示词注入的冗长规则，优先提取最后一条真实 user 提问）
         all_msgs = req_json.get("messages", [])
-        prompt_txt = ""
+        last_user_prompt = ""
+        full_context = []
         for m in all_msgs:
             role = m.get("role", "user")
             content = m.get("content", "")
+            txt = ""
             if isinstance(content, str):
-                prompt_txt += f"{role}: {content}\n"
+                txt = content
             elif isinstance(content, list):
                 for p in content:
                     if isinstance(p, dict) and p.get("type") == "text":
-                        prompt_txt += f"{role}: {p.get('text', '')}\n"
-        prompt_txt = prompt_txt.strip()
+                        txt += p.get("text", "")
+            txt = txt.strip()
+            if not txt:
+                continue
+
+            if role == "user":
+                last_user_prompt = txt
+                full_context.append(f"User: {txt}")
+            elif role == "assistant":
+                full_context.append(f"Assistant: {txt}")
+
+        # 核心：必须使用最后一条真实用户 Prompt，绝不能拼接 system 噪声
+        prompt_txt = last_user_prompt if last_user_prompt else "你好"
+        with open("/tmp/last_ez_prompt.txt", "w", encoding="utf-8") as _pf:
+            _pf.write(f"PROMPT_TXT: {prompt_txt}\nALL_MSGS: {json.dumps(all_msgs, ensure_ascii=False)}")
 
         # 读取用户 Token（全自动静默续期机制：快过期自动用账号密码重新换票）
         user_token = get_ez_valid_token()
@@ -1965,11 +1978,16 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_msg}}]}).encode("utf-8"))
             return
 
+        # 完美对齐客户端 ez-chat 真实发包：同时携带 prompt_preview、prompt、messages 全结构！
+        send_prompt = prompt_txt
+
         ez_payload = {
             "model": target_model,
-            "prompt_preview": prompt_txt if prompt_txt else "你好",
+            "prompt_preview": send_prompt,
+            "prompt": send_prompt,
+            "messages": [{"role": "user", "content": send_prompt}],
             "feature_tier": f_tier,
-            "estimated_tokens": max(len(prompt_txt) // 2, 20),
+            "estimated_tokens": max(len(send_prompt) // 2, 20),
             "web_search": False
         }
 
@@ -1983,7 +2001,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
         try:
             req = urllib.request.Request(url, data=json.dumps(ez_payload).encode("utf-8"), headers=headers, method="POST")
-            with urllib.request.urlopen(req, context=SSL_CTX, timeout=60) as resp:
+            with CELLULAR_OPENER.open(req, timeout=60) as resp:
                 ez_resp = json.loads(resp.read().decode("utf-8", errors="ignore"))
 
             # 如果后端返回 Model retired 错误
@@ -1992,7 +2010,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 ez_payload["model"] = "gpt-4o"
                 ez_payload["feature_tier"] = "chat_standard"
                 req_retry = urllib.request.Request(url, data=json.dumps(ez_payload).encode("utf-8"), headers=headers, method="POST")
-                with urllib.request.urlopen(req_retry, context=SSL_CTX, timeout=60) as r_resp:
+                with CELLULAR_OPENER.open(req_retry, timeout=60) as r_resp:
                     ez_resp = json.loads(r_resp.read().decode("utf-8", errors="ignore"))
 
             reply_text = ez_resp.get("reply", "")
@@ -2093,7 +2111,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     ez_payload["model"] = "gpt-4o"
                     ez_payload["feature_tier"] = "chat_standard"
                     req_retry = urllib.request.Request(url, data=json.dumps(ez_payload).encode("utf-8"), headers=headers, method="POST")
-                    with urllib.request.urlopen(req_retry, context=SSL_CTX, timeout=60) as r_resp:
+                    with CELLULAR_OPENER.open(req_retry, timeout=60) as r_resp:
                         ez_resp = json.loads(r_resp.read().decode("utf-8", errors="ignore"))
                     reply_text = ez_resp.get("reply", "")
                     tokens_used = ez_resp.get("actual_tokens", 50)
