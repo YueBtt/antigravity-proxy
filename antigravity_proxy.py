@@ -215,6 +215,7 @@ ACCOUNTS_FILE = os.path.join(PROXY_DIR, "accounts.json")
 DAILY_STATS_FILE = os.path.join(PROXY_DIR, "daily_stats.json")
 LOGS_FILE = os.path.join(PROXY_DIR, "request_logs.json")
 EZ_TOKEN_FILE = os.path.join(PROXY_DIR, "ezcomplete_token.txt")
+EZ_BALANCE_FILE = os.path.join(PROXY_DIR, "ezcomplete_balance.txt")
 EZ_SUPABASE_URL = "https://spuoimtqofhbdzosrbng.supabase.co"
 EZ_ANON_KEY = "sb_publishable_AzEVhLuIj1nSMwZvIgKw7A__Y3Ghdtl"
 
@@ -1561,6 +1562,82 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             return
 
+        # 适配 Minis 余额探测端点（兼容 /v1/usage, /api/usage/token, /v1/dashboard/billing/subscription 等）
+        if any(p in path for p in ["usage", "billing/subscription", "dashboard/billing", "user/balance"]):
+            bal = 0
+            u_token = None
+            if os.path.exists(EZ_TOKEN_FILE):
+                try:
+                    with open(EZ_TOKEN_FILE, "r", encoding="utf-8") as f:
+                        u_token = f.read().strip()
+                except Exception:
+                    pass
+
+            if os.path.exists(EZ_BALANCE_FILE):
+                try:
+                    with open(EZ_BALANCE_FILE, "r", encoding="utf-8") as _bf:
+                        bal = float(_bf.read().strip())
+                except Exception:
+                    pass
+
+            if bal <= 0 and u_token:
+                try:
+                    u_req = urllib.request.Request(
+                        f"{EZ_SUPABASE_URL}/functions/v1/get-usage-log",
+                        data=b'{"page":1,"limit":1}',
+                        headers={
+                            "apikey": EZ_ANON_KEY,
+                            "Authorization": f"Bearer {u_token}",
+                            "Content-Type": "application/json"
+                        },
+                        method="POST"
+                    )
+                    with urllib.request.urlopen(u_req, context=SSL_CTX, timeout=5) as u_resp:
+                        u_json = json.loads(u_resp.read().decode("utf-8", errors="ignore"))
+                        rows = u_json.get("rows", [])
+                        if rows and isinstance(rows, list):
+                            bal = rows[0].get("running_balance", 0)
+                except Exception as e:
+                    print(f"[EZBalance] Failed to fetch live balance: {e}")
+
+            # 返回标准 New API / One API / OpenAI billing 响应格式
+            # total_available = 剩余代币数，硬币数直接作为额度展示！
+            b_data = {
+                "object": "billing_subscription",
+                "has_payment_method": True,
+                "canceled": False,
+                "hard_limit_usd": float(bal),
+                "total_granted": float(bal),
+                "total_used": 0.0,
+                "total_available": float(bal),
+                "system_hard_limit_usd": float(bal),
+                # New API / One API 常用字段
+                "total": float(bal),
+                "used": 0.0,
+                "balance": float(bal),
+                "quota": int(bal * 500000), # 兼容以 quota 为计量单位的客户端
+                "currency": "EZCoin"
+            }
+            if "token" in path or "usage/token" in path:
+                b_data = {
+                    "object": "token",
+                    "status": 1,
+                    "data": {
+                        "remain_quota": int(bal * 500000),
+                        "used_quota": 0,
+                        "unlimited_quota": False
+                    }
+                }
+            res_b = json.dumps(b_data).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(res_b)))
+            self.send_header("Connection", "close")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(res_b)
+            return
+
         print(f"[404_HIT] path={path}, full_path={self.path}, method={self.command}", flush=True); self.send_response(404)
         self.send_header("Content-Length", "0")
         self.end_headers()
@@ -1841,6 +1918,12 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             reply_text = ez_resp.get("reply", "")
             tokens_used = ez_resp.get("actual_tokens", 50)
             balance = ez_resp.get("balance", 0)
+            if balance is not None and balance > 0:
+                try:
+                    with open(EZ_BALANCE_FILE, "w", encoding="utf-8") as _bf:
+                        _bf.write(str(balance))
+                except Exception:
+                    pass
 
             latency = int((time.time() - t0) * 1000)
             log_request(f"ez:{target_model}", 200, latency, tokens_used)
