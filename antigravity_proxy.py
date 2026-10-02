@@ -2318,7 +2318,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
             c_id = f"img-{uuid.uuid4().hex[:12]}"
             c_time = int(time.time())
-            md_content = f"![Generated Image]({img_url})\n\n*(Prompt: {prompt} | 剩余代币: {balance})*"
+            md_content = f"![Generated Image]({img_url})\n\n[查看生成的高清原图]({img_url})\n\n*(Prompt: {prompt} | 剩余代币: {balance})*"
 
             if stream:
                 self.send_response(200)
