@@ -215,9 +215,59 @@ ACCOUNTS_FILE = os.path.join(PROXY_DIR, "accounts.json")
 DAILY_STATS_FILE = os.path.join(PROXY_DIR, "daily_stats.json")
 LOGS_FILE = os.path.join(PROXY_DIR, "request_logs.json")
 EZ_TOKEN_FILE = os.path.join(PROXY_DIR, "ezcomplete_token.txt")
+EZ_ACCOUNT_FILE = os.path.join(PROXY_DIR, "ez_account.json")
 EZ_BALANCE_FILE = os.path.join(PROXY_DIR, "ezcomplete_balance.txt")
 EZ_SUPABASE_URL = "https://spuoimtqofhbdzosrbng.supabase.co"
 EZ_ANON_KEY = "sb_publishable_AzEVhLuIj1nSMwZvIgKw7A__Y3Ghdtl"
+
+def get_ez_valid_token():
+    # 检查现有 token 是否有效（提前 120 秒判定过期并静默续期）
+    cur_token = None
+    if os.path.exists(EZ_TOKEN_FILE):
+        try:
+            with open(EZ_TOKEN_FILE, "r", encoding="utf-8") as f:
+                cur_token = f.read().strip()
+            if cur_token:
+                parts = cur_token.split(".")
+                if len(parts) >= 2:
+                    import base64
+                    payload_b64 = parts[1] + "=" * (-len(parts[1]) % 4)
+                    t_info = json.loads(base64.urlsafe_b64decode(payload_b64))
+                    if t_info.get("exp", 0) - time.time() > 120:
+                        return cur_token
+        except Exception:
+            pass
+
+    # 若快过期或无 token，自动使用账号密码静默向 Supabase 重新换票
+    acc_info = {}
+    if os.path.exists(EZ_ACCOUNT_FILE):
+        try:
+            with open(EZ_ACCOUNT_FILE, "r", encoding="utf-8") as f:
+                acc_info = json.load(f)
+        except Exception:
+            pass
+
+    email = acc_info.get("email", "1442285193@qq.com")
+    pwd = acc_info.get("password", "tT778899")
+
+    if email and pwd:
+        try:
+            auth_url = f"{EZ_SUPABASE_URL}/auth/v1/token?grant_type=password"
+            req_data = json.dumps({"email": email, "password": pwd}).encode("utf-8")
+            headers = {"apikey": EZ_ANON_KEY, "Content-Type": "application/json"}
+            req = urllib.request.Request(auth_url, data=req_data, headers=headers, method="POST")
+            with urllib.request.urlopen(req, context=SSL_CTX, timeout=10) as resp:
+                auth_res = json.loads(resp.read().decode("utf-8", errors="ignore"))
+                new_token = auth_res.get("access_token")
+                if new_token:
+                    with open(EZ_TOKEN_FILE, "w", encoding="utf-8") as f:
+                        f.write(new_token.strip())
+                    print("[EZAuth] 自动静默账号密码登录成功，已更新全新 Token！")
+                    return new_token.strip()
+        except Exception as e:
+            print(f"[EZAuth] 自动静默换票失败: {e}")
+
+    return cur_token
 
 # Google Cloud Code / Antigravity default OAuth app credentials
 # Set via environment variables GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET if custom app is desired
@@ -1565,13 +1615,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         # 适配 Minis 余额探测端点（兼容 /v1/usage, /api/usage/token, /v1/dashboard/billing/subscription 等）
         if any(p in path for p in ["usage", "billing/subscription", "dashboard/billing", "user/balance"]):
             bal = 0
-            u_token = None
-            if os.path.exists(EZ_TOKEN_FILE):
-                try:
-                    with open(EZ_TOKEN_FILE, "r", encoding="utf-8") as f:
-                        u_token = f.read().strip()
-                except Exception:
-                    pass
+            u_token = get_ez_valid_token()
 
             if os.path.exists(EZ_BALANCE_FILE):
                 try:
@@ -1643,12 +1687,15 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        with open("/tmp/pda_req.log", "a") as _f:
-            _f.write(f"{time.time()} {self.command} {self.path} headers={dict(self.headers)}\n")
         url = urllib.parse.urlparse(self.path)
         path = url.path
         length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(length) if length > 0 else b"{}"
+
+        # 优先拦截处理 EZCompleteUI 专属独立端点
+        if path.startswith("/ez/") or path.startswith("/ez"):
+            self.handle_ezcomplete_chat(body)
+            return
 
         if path == "/api/switch_account":
             try:
@@ -1858,10 +1905,23 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         stream = req_json.get("stream", False)
         raw_model = str(req_json.get("model", "gpt-4o-mini-2024-07-18"))
 
-        # 如果传入的模型本身就在 EZCompleteUI 原生支持范围内，直接原样透传给 Supabase！
+        # 如果传入的模型本身就在 EZCompleteUI 原生支持范围内，做自动别名兼容与退役重定向
         target_model = raw_model
-        if raw_model in ["ez-chat", "ez-gpt-4o-mini"]:
-            target_model = "gpt-4o-mini-2024-07-18"
+        if "gpt-6-sol" in raw_model:
+            target_model = "gpt-6.1-sol"
+        elif "gpt-6-astra" in raw_model:
+            target_model = "gpt-6-astra"
+        elif raw_model in ["ez-chat", "ez-gpt-4o-mini"]:
+            target_model = "gpt-4o"
+        elif raw_model in ["gpt-4o-mini-2024-07-18", "gpt-4o-mini"]:
+            target_model = "gpt-4o"
+
+        # 根据模型动态配置 feature_tier
+        f_tier = "chat_standard"
+        if "mini" in target_model or "nano" in target_model:
+            f_tier = "chat_mini"
+        elif "gpt-6" in target_model or "gpt-5" in target_model:
+            f_tier = "chat_premium"
 
         # 提取上下文对话
         all_msgs = req_json.get("messages", [])
@@ -1877,38 +1937,11 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         prompt_txt += f"{role}: {p.get('text', '')}\n"
         prompt_txt = prompt_txt.strip()
 
-        # 读取用户 Token（支持自动从 QX persistent.db 动态热提取）
-        user_token = None
-        qx_db_path = "/private/var/mobile/Containers/Shared/AppGroup/F871626B-5C75-4A99-9644-9F892103E4F2/Documents/persistent_database/persistent.db"
-        if os.path.exists(qx_db_path):
-            try:
-                import sqlite3
-                _conn = sqlite3.connect(qx_db_path)
-                _c = _conn.cursor()
-                _rows = _c.execute("SELECT * FROM persistent_store").fetchall()
-                for _r in _rows:
-                    if "ezcomplete" in str(_r):
-                        for _col in _r:
-                            if isinstance(_col, bytes) and _col.startswith(b"ey"):
-                                user_token = _col.decode("utf-8", "ignore").strip()
-                                with open(EZ_TOKEN_FILE, "w", encoding="utf-8") as _tf:
-                                    _tf.write(user_token)
-                                break
-                        if user_token:
-                            break
-                _conn.close()
-            except Exception:
-                pass
-
-        if not user_token and os.path.exists(EZ_TOKEN_FILE):
-            try:
-                with open(EZ_TOKEN_FILE, "r", encoding="utf-8") as f:
-                    user_token = f.read().strip()
-            except Exception:
-                pass
+        # 读取用户 Token（全自动静默续期机制：快过期自动用账号密码重新换票）
+        user_token = get_ez_valid_token()
 
         if not user_token:
-            err_msg = "【EZCompleteUI 鉴权失败】本地未找到 Token！请在真机点开一次 EZCompleteUI App 自动捕获。"
+            err_msg = "【EZCompleteUI 鉴权失败】无法通过账号密码自动换票，请检查账号密码或网络连接。"
             if stream:
                 self.send_response(200)
                 self.send_header("Content-Type", "text/event-stream; charset=utf-8")
@@ -1935,7 +1968,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         ez_payload = {
             "model": target_model,
             "prompt_preview": prompt_txt if prompt_txt else "你好",
-            "feature_tier": "chat_mini",
+            "feature_tier": f_tier,
             "estimated_tokens": max(len(prompt_txt) // 2, 20),
             "web_search": False
         }
@@ -1952,6 +1985,15 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             req = urllib.request.Request(url, data=json.dumps(ez_payload).encode("utf-8"), headers=headers, method="POST")
             with urllib.request.urlopen(req, context=SSL_CTX, timeout=60) as resp:
                 ez_resp = json.loads(resp.read().decode("utf-8", errors="ignore"))
+
+            # 如果后端返回 Model retired 错误
+            if ez_resp.get("error") and "retired" in ez_resp.get("error", "").lower():
+                # 自动降级为 gpt-4o 重试
+                ez_payload["model"] = "gpt-4o"
+                ez_payload["feature_tier"] = "chat_standard"
+                req_retry = urllib.request.Request(url, data=json.dumps(ez_payload).encode("utf-8"), headers=headers, method="POST")
+                with urllib.request.urlopen(req_retry, context=SSL_CTX, timeout=60) as r_resp:
+                    ez_resp = json.loads(r_resp.read().decode("utf-8", errors="ignore"))
 
             reply_text = ez_resp.get("reply", "")
             tokens_used = ez_resp.get("actual_tokens", 50)
@@ -2007,6 +2049,8 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.wfile.write(f"data: {json.dumps(end_chunk, ensure_ascii=False)}\n\n".encode("utf-8"))
                 self.wfile.write(b"data: [DONE]\n\n")
                 self.wfile.flush()
+                self.close_connection = True
+                return
             else:
                 out_resp = {
                     "id": chat_id,
@@ -2041,6 +2085,73 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
         except urllib.error.HTTPError as he:
             err_b = he.read().decode("utf-8", errors="ignore")
+            # 捕获 Model retired 或 403 权限不足，全自动无感降级到 gpt-4o 顶上去！
+            if (he.code in [400, 403]) and ("retired" in err_b.lower() or "not found" in err_b.lower() or "purchase required" in err_b.lower()):
+                try:
+                    c_id = f"chatcmpl-ez-{uuid.uuid4().hex[:12]}"
+                    c_time = int(time.time())
+                    ez_payload["model"] = "gpt-4o"
+                    ez_payload["feature_tier"] = "chat_standard"
+                    req_retry = urllib.request.Request(url, data=json.dumps(ez_payload).encode("utf-8"), headers=headers, method="POST")
+                    with urllib.request.urlopen(req_retry, context=SSL_CTX, timeout=60) as r_resp:
+                        ez_resp = json.loads(r_resp.read().decode("utf-8", errors="ignore"))
+                    reply_text = ez_resp.get("reply", "")
+                    tokens_used = ez_resp.get("actual_tokens", 50)
+                    balance = ez_resp.get("balance", 0)
+                    if balance is not None and balance > 0:
+                        try:
+                            with open(EZ_BALANCE_FILE, "w", encoding="utf-8") as _bf:
+                                _bf.write(str(balance))
+                        except Exception:
+                            pass
+                    # 输出成功回复
+                    if stream:
+                        self.send_response(200)
+                        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+                        self.send_header("Cache-Control", "no-cache")
+                        self.send_header("Connection", "close")
+                        self.send_cors()
+                        self.end_headers()
+                        self.close_connection = True
+                        chunk_obj = {
+                            "id": c_id,
+                            "object": "chat.completion.chunk",
+                            "created": c_time,
+                            "model": raw_model,
+                            "choices": [{"index": 0, "delta": {"content": reply_text}, "finish_reason": None}]
+                        }
+                        self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
+                        end_chunk = {
+                            "id": c_id,
+                            "object": "chat.completion.chunk",
+                            "created": c_time,
+                            "model": raw_model,
+                            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]
+                        }
+                        self.wfile.write(f"data: {json.dumps(end_chunk, ensure_ascii=False)}\n\n".encode("utf-8"))
+                        self.wfile.write(b"data: [DONE]\n\n")
+                        self.wfile.flush()
+                        return
+                    else:
+                        out_resp = {
+                            "id": c_id,
+                            "object": "chat.completion",
+                            "created": c_time,
+                            "model": raw_model,
+                            "choices": [{"index": 0, "message": {"role": "assistant", "content": reply_text}, "finish_reason": "stop"}],
+                            "usage": {"prompt_tokens": len(prompt_txt) // 3, "completion_tokens": len(reply_text) // 3, "total_tokens": tokens_used}
+                        }
+                        res_bytes = json.dumps(out_resp, ensure_ascii=False).encode("utf-8")
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/json; charset=utf-8")
+                        self.send_header("Content-Length", str(len(res_bytes)))
+                        self.send_cors()
+                        self.end_headers()
+                        self.wfile.write(res_bytes)
+                        return
+                except Exception as _re_e:
+                    err_b += f" (自动降级重试亦失败: {_re_e})"
+
             err_text = f"【EZCompleteUI 接口错误 {he.code}】{err_b}（Token 可能已过期，请在手机上打开一次 EZCompleteUI App 重新激活）"
             print(f"[EZChatError] {err_text}")
             if stream:
@@ -2058,12 +2169,15 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
                 self.wfile.write(b"data: [DONE]\n\n")
                 self.wfile.flush()
+                self.close_connection = True
+                return
             else:
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.send_cors()
                 self.end_headers()
                 self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
+                return
         except Exception as e:
             err_text = f"【EZCompleteUI 代理异常】{str(e)}"
             print(f"[EZChatError] {err_text}")
@@ -2082,12 +2196,15 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
                 self.wfile.write(b"data: [DONE]\n\n")
                 self.wfile.flush()
+                self.close_connection = True
+                return
             else:
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.send_cors()
                 self.end_headers()
                 self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
+                return
 
     def handle_image_generations(self, body):
         t0 = time.time()
