@@ -1877,9 +1877,30 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         prompt_txt += f"{role}: {p.get('text', '')}\n"
         prompt_txt = prompt_txt.strip()
 
-        # 读取用户 Token
+        # 读取用户 Token（支持自动从 QX persistent.db 动态热提取）
         user_token = None
-        if os.path.exists(EZ_TOKEN_FILE):
+        qx_db_path = "/private/var/mobile/Containers/Shared/AppGroup/F871626B-5C75-4A99-9644-9F892103E4F2/Documents/persistent_database/persistent.db"
+        if os.path.exists(qx_db_path):
+            try:
+                import sqlite3
+                _conn = sqlite3.connect(qx_db_path)
+                _c = _conn.cursor()
+                _rows = _c.execute("SELECT * FROM persistent_store").fetchall()
+                for _r in _rows:
+                    if "ezcomplete" in str(_r):
+                        for _col in _r:
+                            if isinstance(_col, bytes) and _col.startswith(b"ey"):
+                                user_token = _col.decode("utf-8", "ignore").strip()
+                                with open(EZ_TOKEN_FILE, "w", encoding="utf-8") as _tf:
+                                    _tf.write(user_token)
+                                break
+                        if user_token:
+                            break
+                _conn.close()
+            except Exception:
+                pass
+
+        if not user_token and os.path.exists(EZ_TOKEN_FILE):
             try:
                 with open(EZ_TOKEN_FILE, "r", encoding="utf-8") as f:
                     user_token = f.read().strip()
@@ -1887,11 +1908,28 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 pass
 
         if not user_token:
-            self.send_response(401)
-            self.send_header("Content-Type", "application/json")
-            self.send_cors()
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": {"message": "EZCompleteUI Token 未配置，请先在手机上打开一次 App 自动捕获", "type": "auth_error"}}).encode("utf-8"))
+            err_msg = "【EZCompleteUI 鉴权失败】本地未找到 Token！请在真机点开一次 EZCompleteUI App 自动捕获。"
+            if stream:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+                self.send_cors()
+                self.end_headers()
+                chunk_obj = {
+                    "id": f"chatcmpl-ez-{uuid.uuid4().hex[:12]}",
+                    "object": "chat.completion.chunk",
+                    "created": int(time.time()),
+                    "model": raw_model,
+                    "choices": [{"index": 0, "delta": {"content": err_msg}, "finish_reason": "stop"}]
+                }
+                self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
+                self.wfile.write(b"data: [DONE]\n\n")
+                self.wfile.flush()
+            else:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_msg}}]}).encode("utf-8"))
             return
 
         ez_payload = {
@@ -2003,17 +2041,53 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
         except urllib.error.HTTPError as he:
             err_b = he.read().decode("utf-8", errors="ignore")
-            self.send_response(he.code)
-            self.send_header("Content-Type", "application/json")
-            self.send_cors()
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": {"message": f"EZCompleteUI 后端错误: {err_b}", "code": he.code}}).encode("utf-8"))
+            err_text = f"【EZCompleteUI 接口错误 {he.code}】{err_b}（Token 可能已过期，请在手机上打开一次 EZCompleteUI App 重新激活）"
+            print(f"[EZChatError] {err_text}")
+            if stream:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+                self.send_cors()
+                self.end_headers()
+                chunk_obj = {
+                    "id": f"chatcmpl-ez-{uuid.uuid4().hex[:12]}",
+                    "object": "chat.completion.chunk",
+                    "created": int(time.time()),
+                    "model": raw_model,
+                    "choices": [{"index": 0, "delta": {"content": err_text}, "finish_reason": "stop"}]
+                }
+                self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
+                self.wfile.write(b"data: [DONE]\n\n")
+                self.wfile.flush()
+            else:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
         except Exception as e:
-            self.send_response(500)
-            self.send_header("Content-Type", "application/json")
-            self.send_cors()
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": {"message": f"EZCompleteUI 代理异常: {str(e)}"}}).encode("utf-8"))
+            err_text = f"【EZCompleteUI 代理异常】{str(e)}"
+            print(f"[EZChatError] {err_text}")
+            if stream:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+                self.send_cors()
+                self.end_headers()
+                chunk_obj = {
+                    "id": f"chatcmpl-ez-{uuid.uuid4().hex[:12]}",
+                    "object": "chat.completion.chunk",
+                    "created": int(time.time()),
+                    "model": raw_model,
+                    "choices": [{"index": 0, "delta": {"content": err_text}, "finish_reason": "stop"}]
+                }
+                self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
+                self.wfile.write(b"data: [DONE]\n\n")
+                self.wfile.flush()
+            else:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
 
     def handle_image_generations(self, body):
         t0 = time.time()
