@@ -1694,6 +1694,18 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
         # 优先拦截处理 EZCompleteUI 专属独立端点
         if path.startswith("/ez/") or path.startswith("/ez"):
+            # 如果请求的是生图（包含 images/generations 或模型带有 flare/sunburst/gpt-image）
+            if "images" in path:
+                self.handle_ez_image_generations(body)
+                return
+            try:
+                chk = json.loads(body.decode("utf-8"))
+                m_name = str(chk.get("model", "")).lower()
+                if "flare" in m_name or "sunburst" in m_name or "gpt-image" in m_name:
+                    self.handle_ez_image_generations(body)
+                    return
+            except Exception:
+                pass
             self.handle_ezcomplete_chat(body)
             return
 
@@ -2316,6 +2328,15 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
 
+            # 优先秒回，如果下载超时不卡死主链路
+            b64_img = ""
+            try:
+                img_get_req = urllib.request.Request(img_url, headers={"User-Agent": "Minis/ImageClient"})
+                with CELLULAR_OPENER.open(img_get_req, timeout=5) as i_resp:
+                    b64_img = base64.b64encode(i_resp.read()).decode("utf-8")
+            except Exception as _b64_e:
+                print(f"[ImgB64Error] {_b64_e}")
+
             c_id = f"img-{uuid.uuid4().hex[:12]}"
             c_time = int(time.time())
             md_content = f"![Generated Image]({img_url})\n\n[查看生成的高清原图]({img_url})\n\n*(Prompt: {prompt} | 剩余代币: {balance})*"
@@ -2348,13 +2369,17 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.wfile.flush()
                 return
             else:
+                img_data_obj = {"url": img_url}
+                if b64_img:
+                    img_data_obj["b64_json"] = b64_img
+
                 out_resp = {
                     "id": c_id,
                     "object": "chat.completion",
                     "created": c_time,
                     "model": raw_model,
                     "choices": [{"index": 0, "message": {"role": "assistant", "content": md_content}, "finish_reason": "stop"}],
-                    "data": [{"url": img_url}]
+                    "data": [img_data_obj]
                 }
                 res_bytes = json.dumps(out_resp, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
