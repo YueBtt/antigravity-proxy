@@ -198,6 +198,7 @@ import os
 import sys
 import time
 import json
+import gzip
 import uuid
 import threading
 import urllib.request
@@ -227,6 +228,43 @@ ANTIGRAVITY_USER_AGENT = "antigravity/cli/1.1.24 windows/amd64"
 SSL_CTX = ssl.create_default_context()
 SSL_CTX.check_hostname = False
 SSL_CTX.verify_mode = ssl.CERT_NONE
+
+import http.client
+import socket
+
+class CellularSafeHTTPSConnection(http.client.HTTPSConnection):
+    def connect(self):
+        # 1. TCP + TLS 握手阶段：12秒快速探测，绝不死卡
+        self.timeout = 12.0
+        super().connect()
+        # 2. 握手成功后：切换为 90秒 充裕读写时间 + 64KB 发送缓冲，防止 4G/5G 流量上传大图/大包时抛 The write operation timed out
+        if self.sock:
+            try:
+                self.sock.settimeout(90.0)
+                self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except Exception:
+                pass
+
+    def send(self, data):
+        if self.sock is None:
+            if self.auto_open:
+                self.connect()
+            else:
+                raise http.client.NotConnected()
+        if isinstance(data, (bytes, bytearray)) and len(data) > 16384:
+            # 16KB 分块流式写入，适配蜂窝网 + VLESS/WSS 隧道滑窗
+            mv = memoryview(data)
+            for i in range(0, len(mv), 16384):
+                self.sock.sendall(mv[i:i+16384])
+        else:
+            super().send(data)
+
+class CellularSafeHTTPSHandler(urllib.request.HTTPSHandler):
+    def https_open(self, req):
+        return self.do_open(CellularSafeHTTPSConnection, req, context=self._context)
+
+CELLULAR_OPENER = urllib.request.build_opener(CellularSafeHTTPSHandler(context=SSL_CTX))
+
 
 DATA_LOCK = threading.RLock()
 LOGS_LOCK = threading.RLock()
@@ -522,7 +560,12 @@ def convert_openai_to_gemini(req_json):
     expert_rule = {"text": "【角色与定位】你是顶尖的底层软件架构师与系统安全研究专家。专注 iOS / Linux 底层机制、动态库与二进制逆向审计、编译与自动化运维。面对技术问题直接输出硬核技术方案与完整实现，直击技术本质，不输出空话废话。"}
     system_parts.append(expert_rule)
 
-    for msg in req_json.get("messages", []):
+    all_msgs = req_json.get("messages", [])
+    # 找出最后 2 条包含图片的消息索引，更早的历史图片自动剥离 base64（保留文本上下文），防止多轮对话后每次重传几 MB 图片塞死 4G/5G 上行通道！
+    img_msg_indices = [idx for idx, m in enumerate(all_msgs) if isinstance(m.get("content"), list) and any(isinstance(p, dict) and p.get("type") == "image_url" for p in m.get("content"))]
+    keep_img_indices = set(img_msg_indices[-2:]) if len(img_msg_indices) > 2 else set(img_msg_indices)
+
+    for msg_idx, msg in enumerate(all_msgs):
         role = msg.get("role")
         raw_content = msg.get("content", "")
         
@@ -536,6 +579,9 @@ def convert_openai_to_gemini(req_json):
                     if part.get("type") == "text":
                         parts.append({"text": part.get("text", "")})
                     elif part.get("type") == "image_url":
+                        if msg_idx not in keep_img_indices:
+                            parts.append({"text": "[历史附图已省略以加速传输]"})
+                            continue
                         img_url = part.get("image_url", {}).get("url", "")
                         if img_url.startswith("data:"):
                             try:
@@ -612,9 +658,11 @@ def convert_openai_to_gemini(req_json):
     elif "claude" in target_model:
         # Claude 模型支持自适应思考
         gen_config["thinkingConfig"] = {"includeThoughts": True}
-    elif ("high" in raw_model.lower() or "thinking" in raw_model.lower()) and "low" not in raw_model.lower():
-        # 用户显式指定了 -high 或 -thinking，拉满 4096 深度思考啃硬骨头
+    elif "thinking" in raw_model.lower() and "low" not in raw_model.lower():
+        # 只有显式带 -thinking 才锁 4096；默认的 gemini-3.8-flash-high 用 1024 极速动态思考，兼顾智商与秒回速度！
         gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 4096}
+    elif "high" in raw_model.lower() and "low" not in raw_model.lower():
+        gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 1024}
     elif "low" in raw_model.lower():
         # 用户指定了 low 轻量思考
         gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 512}
@@ -1479,11 +1527,13 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             return
 
-        self.send_response(404)
+        print(f"[404_HIT] path={path}, full_path={self.path}, method={self.command}", flush=True); self.send_response(404)
         self.send_header("Content-Length", "0")
         self.end_headers()
 
     def do_POST(self):
+        with open("/tmp/pda_req.log", "a") as _f:
+            _f.write(f"{time.time()} {self.command} {self.path} headers={dict(self.headers)}\n")
         url = urllib.parse.urlparse(self.path)
         path = url.path
         length = int(self.headers.get("Content-Length", 0))
@@ -1659,7 +1709,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.handle_anthropic_messages(body)
             return
 
-        if path == "/v1/chat/completions":
+        if path in ["/v1/chat/completions", "/chat/completions", "/v1", "/"]:
             try:
                 chk = json.loads(body.decode("utf-8"))
                 if chk.get("model") == "gemini-3.1-flash-image":
@@ -1967,14 +2017,18 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             if not cur_tok:
                 continue
             for attempt in range(2):
+                raw_b = json.dumps(gemini_payload).encode("utf-8")
+                gz_b = gzip.compress(raw_b) if len(raw_b) > 1024 else raw_b
                 hdrs = {
                     "Authorization": f"Bearer {cur_tok}",
                     "Content-Type": "application/json",
                     "User-Agent": ANTIGRAVITY_USER_AGENT
                 }
-                req_obj = urllib.request.Request(target_url, data=json.dumps(gemini_payload).encode("utf-8"), headers=hdrs)
+                if len(raw_b) > 1024:
+                    hdrs["Content-Encoding"] = "gzip"
+                req_obj = urllib.request.Request(target_url, data=gz_b, headers=hdrs)
                 try:
-                    with urllib.request.urlopen(req_obj, context=SSL_CTX, timeout=60) as resp:
+                    with CELLULAR_OPENER.open(req_obj, timeout=90) as resp:
                         g_res = json.loads(resp.read().decode("utf-8"))
                     if not acc_item.get("active"):
                         for a in accs:
@@ -2141,14 +2195,18 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 if not cur_tok:
                     continue
                 for attempt in range(3):
+                    raw_b = json.dumps(gemini_payload).encode("utf-8")
+                    gz_b = gzip.compress(raw_b) if len(raw_b) > 1024 else raw_b
                     hdrs = {
                         "Authorization": f"Bearer {cur_tok}",
                         "Content-Type": "application/json",
                         "User-Agent": ANTIGRAVITY_USER_AGENT
                     }
-                    req_obj = urllib.request.Request(target_url, data=json.dumps(gemini_payload).encode("utf-8"), headers=hdrs)
+                    if len(raw_b) > 1024:
+                        hdrs["Content-Encoding"] = "gzip"
+                    req_obj = urllib.request.Request(target_url, data=gz_b, headers=hdrs)
                     try:
-                        resp_obj = urllib.request.urlopen(req_obj, context=SSL_CTX, timeout=300)
+                        resp_obj = CELLULAR_OPENER.open(req_obj, timeout=90)
                         if not acc_item.get("active"):
                             for a in accs:
                                 a["active"] = (a.get("email") == acc_item.get("email"))
@@ -2165,7 +2223,9 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         print(f"[Retry] HTTP {he.code} on {target_model} (acc={acc_item.get('email')}, attempt={attempt+1}): {err_body[:200]}")
                         if he.code == 401:
                             cur_tok = refresh_token(acc_item)
-                            if not cur_tok:
+                            if cur_tok:
+                                save_accounts(accs)
+                            else:
                                 break
                         elif he.code in (403, 429):
                             # 如果当前账号遇到 403(Verify your account) 或 429 限流，不傻等 3 次，当场切换下一个健康账号并永久标记新的 active 账号！
@@ -2189,6 +2249,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         prompt_tokens = 0
         comp_tokens = 0
         thoughts_tokens = 0
+        cached_tokens = 0
 
         if stream:
             try:
@@ -2196,9 +2257,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     self.send_response(200)
                     self.send_header("Content-Type", "text/event-stream; charset=utf-8")
                     self.send_header("Cache-Control", "no-cache")
-                    self.send_header("Connection", "keep-alive")
+                    self.send_header("Connection", "close")
                     self.send_cors()
                     self.end_headers()
+                    self.close_connection = True
 
                     chat_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
                     created_time = int(time.time())
@@ -2215,6 +2277,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                                     prompt_tokens = usage.get("promptTokenCount", prompt_tokens)
                                     comp_tokens = usage.get("candidatesTokenCount", comp_tokens)
                                     thoughts_tokens = usage.get("thoughtsTokenCount", thoughts_tokens)
+                                    cached_tokens = usage.get("cachedContentTokenCount", cached_tokens)
 
                                 if candidates:
                                     parts = candidates[0].get("content", {}).get("parts", [])
@@ -2317,7 +2380,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                             "prompt_tokens": prompt_tokens,
                             "completion_tokens": total_comp,
                             "total_tokens": prompt_tokens + total_comp,
-                            "prompt_tokens_details": {"cached_tokens": 0},
+                            "prompt_tokens_details": {"cached_tokens": cached_tokens},
                             "completion_tokens_details": {"reasoning_tokens": thoughts_tokens}
                         }
                     }
@@ -2352,6 +2415,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                             "finish_reason": "stop"
                         }]
                     }
+                    self.close_connection = True
                     self.wfile.write(f"data: {json.dumps(err_chunk, ensure_ascii=False)}\n\ndata: [DONE]\n\n".encode("utf-8"))
                     self.wfile.flush()
                 except Exception:
@@ -2366,6 +2430,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         prompt_tokens = usage.get("promptTokenCount", 0)
                         comp_tokens = usage.get("candidatesTokenCount", 0)
                         thoughts_tokens = usage.get("thoughtsTokenCount", 0)
+                        cached_tokens = usage.get("cachedContentTokenCount", 0)
 
                     content_text = ""
                     reasoning_text = ""
@@ -2416,7 +2481,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                             "prompt_tokens": prompt_tokens,
                             "completion_tokens": total_comp,
                             "total_tokens": prompt_tokens + total_comp,
-                            "prompt_tokens_details": {"cached_tokens": 0},
+                            "prompt_tokens_details": {"cached_tokens": cached_tokens},
                             "completion_tokens_details": {"reasoning_tokens": thoughts_tokens}
                         }
                     }
