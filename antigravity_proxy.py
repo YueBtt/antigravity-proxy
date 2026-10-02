@@ -1860,6 +1860,14 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 return
 
         if path in ["/v1/images/generations", "/images/generations"]:
+            try:
+                chk = json.loads(body.decode("utf-8"))
+                m_name = str(chk.get("model", "")).lower()
+                if "flare" in m_name or "sunburst" in m_name or "gpt-image" in m_name or "dalle" in m_name or "ez" in m_name:
+                    self.handle_ez_image_generations(body)
+                    return
+            except Exception:
+                pass
             self.handle_image_generations(body)
             return
 
@@ -1873,6 +1881,9 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 m_name = str(chk.get("model", "")).lower()
                 if m_name == "gemini-3.1-flash-image":
                     self.handle_image_generations(body)
+                    return
+                elif "flare" in m_name or "sunburst" in m_name or "gpt-image" in m_name:
+                    self.handle_ez_image_generations(body)
                     return
                 elif m_name.startswith("ez-") or "ezcomplete" in m_name:
                     self.handle_ezcomplete_chat(body)
@@ -2223,6 +2234,156 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
                 return
+
+    def handle_ez_image_generations(self, body):
+        t0 = time.time()
+        try:
+            req_json = json.loads(body.decode("utf-8"))
+        except Exception as e:
+            self.send_response(400)
+            self.send_header("Content-Type", "application/json")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": f"Invalid JSON: {e}"}).encode("utf-8"))
+            return
+
+        stream = req_json.get("stream", False)
+        raw_model = str(req_json.get("model", "gpt-image-2.5-flare"))
+        prompt = req_json.get("prompt", "")
+        if not prompt and "messages" in req_json:
+            for m in req_json.get("messages", []):
+                if m.get("role") == "user":
+                    c = m.get("content")
+                    if isinstance(c, str):
+                        prompt = c
+                    elif isinstance(c, list):
+                        for p in c:
+                            if isinstance(p, dict) and p.get("type") == "text":
+                                prompt = p.get("text", "")
+        if not prompt:
+            prompt = "A beautiful scenic view"
+
+        u_token = get_ez_valid_token()
+        if not u_token:
+            err_text = "【EZCompleteUI 生图失败】未能获取到有效凭据 Token，请检查账号状态。"
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
+            return
+
+        # 智能参数构造（免费用户质量强制锁定为 medium，避免 403 Purchase Required）
+        ez_img_payload = {
+            "model": raw_model,
+            "prompt": prompt,
+            "size": req_json.get("size", "1024x1024"),
+            "quality": "medium",
+            "output_format": "png"
+        }
+
+        url = f"{EZ_SUPABASE_URL}/functions/v1/ez-image"
+        headers = {
+            "apikey": EZ_ANON_KEY,
+            "Authorization": f"Bearer {u_token}",
+            "Content-Type": "application/json",
+            "Connection": "close"
+        }
+
+        try:
+            req = urllib.request.Request(url, data=json.dumps(ez_img_payload).encode("utf-8"), headers=headers, method="POST")
+            with CELLULAR_OPENER.open(req, timeout=120) as resp:
+                resp_data = json.loads(resp.read().decode("utf-8", errors="ignore"))
+
+            images = resp_data.get("images", [])
+            img_url = ""
+            if images and isinstance(images, list):
+                first_img = images[0]
+                if isinstance(first_img, dict):
+                    img_url = first_img.get("url", "")
+                elif isinstance(first_img, str):
+                    img_url = first_img
+
+            if not img_url:
+                raise Exception(f"未在返回数据中找到图片 URL: {resp_data}")
+
+            # 记录最新代币余额
+            balance = resp_data.get("balance")
+            if balance is not None:
+                try:
+                    with open(EZ_BALANCE_FILE, "w", encoding="utf-8") as _bf:
+                        _bf.write(str(balance))
+                except Exception:
+                    pass
+
+            c_id = f"img-{uuid.uuid4().hex[:12]}"
+            c_time = int(time.time())
+            md_content = f"![Generated Image]({img_url})\n\n*(Prompt: {prompt} | 剩余代币: {balance})*"
+
+            if stream:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+                self.send_header("Cache-Control", "no-cache")
+                self.send_header("Connection", "close")
+                self.send_cors()
+                self.end_headers()
+                self.close_connection = True
+                chunk_obj = {
+                    "id": c_id,
+                    "object": "chat.completion.chunk",
+                    "created": c_time,
+                    "model": raw_model,
+                    "choices": [{"index": 0, "delta": {"content": md_content}, "finish_reason": None}]
+                }
+                self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
+                end_chunk = {
+                    "id": c_id,
+                    "object": "chat.completion.chunk",
+                    "created": c_time,
+                    "model": raw_model,
+                    "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]
+                }
+                self.wfile.write(f"data: {json.dumps(end_chunk, ensure_ascii=False)}\n\n".encode("utf-8"))
+                self.wfile.write(b"data: [DONE]\n\n")
+                self.wfile.flush()
+                return
+            else:
+                out_resp = {
+                    "id": c_id,
+                    "object": "chat.completion",
+                    "created": c_time,
+                    "model": raw_model,
+                    "choices": [{"index": 0, "message": {"role": "assistant", "content": md_content}, "finish_reason": "stop"}],
+                    "data": [{"url": img_url}]
+                }
+                res_bytes = json.dumps(out_resp, ensure_ascii=False).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(res_bytes)))
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(res_bytes)
+                return
+
+        except urllib.error.HTTPError as he:
+            err_b = he.read().decode("utf-8", errors="ignore")
+            err_text = f"【EZCompleteUI 生图接口错误 {he.code}】{err_b}"
+            print(f"[EZImageError] {err_text}")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
+            return
+        except Exception as e:
+            err_text = f"【EZCompleteUI 生图代理异常】{str(e)}"
+            print(f"[EZImageError] {err_text}")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
+            return
 
     def handle_image_generations(self, body):
         t0 = time.time()
