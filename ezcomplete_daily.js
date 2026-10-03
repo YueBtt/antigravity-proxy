@@ -40,7 +40,6 @@ if (isResponse) {
     // 监听 ez-chat 发出的真实请求 Body 格式并永久落盘
     if ($request.url.indexOf("/ez-chat") !== -1 && $request.body) {
         $prefs.setValueForKey($request.body, "ezcomplete_last_body");
-        $notify("EZCompleteUI 捕获成功！", "已截获 ez-chat 发包 Body", $request.body.substring(0, 100));
     }
 
     // 阶段 1A：自动抓取请求头 Token
@@ -51,7 +50,7 @@ if (isResponse) {
         if (token !== oldToken) {
             $prefs.setValueForKey(token, KEY_TOKEN);
             console.log("[EZCompleteUI] 成功捕获并更新 Token: " + token.substring(0, 15) + "...");
-            $notify("EZCompleteUI", "🎉 成功捕获/更新 Token", "已存入 QX 存储，定时任务将自动生效！");
+            // 静默更新即可，不再弹窗骚扰用户！
         }
     }
     $done({});
