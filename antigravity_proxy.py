@@ -74,7 +74,10 @@ def fetch_antigravity_quota():
         return QUOTA_CACHE["data"]
         
     token = None
-    if os.path.exists(CREDS_FILE):
+    acc = get_active_account()
+    if acc:
+        token = acc.get("access_token")
+    if not token and os.path.exists(CREDS_FILE):
         try:
             with open(CREDS_FILE, "r", encoding="utf-8") as f:
                 creds = json.load(f)
@@ -86,8 +89,8 @@ def fetch_antigravity_quota():
         return None
 
     endpoints = [
-        "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary",
-        "https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
+        "https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary",
+        "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary"
     ]
     for ep in endpoints:
         try:
@@ -114,7 +117,8 @@ def fetch_antigravity_quota():
                                 "window": b.get("window", ""),
                                 "name": b.get("displayName", ""),
                                 "remaining_pct": rem,
-                                "desc": b.get("description", "")
+                                "desc": b.get("description", ""),
+                                "reset_time": b.get("resetTime", "")
                             }
                     QUOTA_CACHE["ts"] = now
                     QUOTA_CACHE["data"] = res
@@ -122,8 +126,6 @@ def fetch_antigravity_quota():
         except Exception:
             continue
     return QUOTA_CACHE.get("data")
-
-
 
 # 赛博修真·九重天劫飞升体系 (Token 即灵气)
 # 仙逆·杀伐极境修真体系 (顺为凡，逆则仙)
@@ -1077,19 +1079,19 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     <!-- 底部：双额度血条 -->
     <div style="width: 100%; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; gap: 6px;">
       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10.5px;">
-        <span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;">⚡ 极境雷灵 (5小时额度):</span>
-        <span style="font-weight: 700; color: #34d399;" id="quota-5h-val">78.2% 剩余</span>
+        <span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;">⚡ 极境雷灵 (5小时额度): <b id="quota-5h-countdown" style="color: #fde047; font-size: 10px; margin-left: 2px;">--:--:--</b></span>
+        <span style="font-weight: 700; color: #34d399;" id="quota-5h-val">--% 剩余</span>
       </div>
       <div class="poke-bar-wrap" style="height: 4px;">
-        <div class="poke-bar-fill" id="quota-5h-fill" style="width: 78.2%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+        <div class="poke-bar-fill" id="quota-5h-fill" style="width: 100%; background: linear-gradient(90deg, #10b981, #059669);"></div>
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; margin-top: 1px;">
-        <span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;">📿 天逆天道 (本周寿元):</span>
-        <span style="font-weight: 700; color: #60a5fa;" id="quota-week-val">77.8% 剩余</span>
+        <span style="color: #94a3b8; display: flex; align-items: center; gap: 4px;">📿 天逆天道 (本周寿元): <b id="quota-week-countdown" style="color: #93c5fd; font-size: 10px; margin-left: 2px;">--天--时</b></span>
+        <span style="font-weight: 700; color: #60a5fa;" id="quota-week-val">--% 剩余</span>
       </div>
       <div class="poke-bar-wrap" style="height: 4px;">
-        <div class="poke-bar-fill" id="quota-week-fill" style="width: 77.8%; background: linear-gradient(90deg, #3b82f6, #6366f1);"></div>
+        <div class="poke-bar-fill" id="quota-week-fill" style="width: 100%; background: linear-gradient(90deg, #3b82f6, #6366f1);"></div>
       </div>
     </div>
   </div>
@@ -1203,6 +1205,19 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
 </div>
 
 <script>
+
+function formatCountdown(resetTimeStr) {
+  if (!resetTimeStr) return '';
+  const diff = Math.max(0, Math.floor((new Date(resetTimeStr).getTime() - Date.now()) / 1000));
+  if (diff <= 0) return '已重置';
+  const d = Math.floor(diff / 86400);
+  const h = Math.floor((diff % 86400) / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  const s = diff % 60;
+  if (d > 0) return `${d}天${h}时${m}分`;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
 let maskEmails = localStorage.getItem('ag_mask_emails') === 'true';
 
 function maskText(str) {
@@ -1296,28 +1311,34 @@ async function refreshData() {
       if (q5) {
         const val = document.getElementById('quota-5h-val');
         const fill = document.getElementById('quota-5h-fill');
+        const cd = document.getElementById('quota-5h-countdown');
+        window._LAST_QUOTA_5H_RESET = q5.reset_time;
         if (val) {
           val.innerText = q5.remaining_pct + '% 剩余';
           if (q5.remaining_pct < 20) val.style.color = '#ef4444';
           else if (q5.remaining_pct < 50) val.style.color = '#f59e0b';
           else val.style.color = '#34d399';
         }
+        if (cd) cd.innerText = formatCountdown(q5.reset_time);
         if (fill) fill.style.width = q5.remaining_pct + '%';
       }
       if (qw) {
         const val = document.getElementById('quota-week-val');
         const fill = document.getElementById('quota-week-fill');
+        const cd = document.getElementById('quota-week-countdown');
+        window._LAST_QUOTA_WEEK_RESET = qw.reset_time;
         if (val) {
           val.innerText = qw.remaining_pct + '% 剩余';
           if (qw.remaining_pct < 20) val.style.color = '#ef4444';
           else if (qw.remaining_pct < 50) val.style.color = '#f59e0b';
           else val.style.color = '#60a5fa';
         }
+        if (cd) cd.innerText = formatCountdown(qw.reset_time);
         if (fill) fill.style.width = qw.remaining_pct + '%';
       }
     }
 
-        if (data.pokemon) {
+    if (data.pokemon) {
       const p = data.pokemon;
       if (previewStageIdx === -1) {
         const img = document.getElementById('poke-img');
@@ -1505,6 +1526,14 @@ async function submitOAuthCallback() {
     btn.disabled = false;
   }
 }
+
+
+setInterval(() => {
+  const cd5 = document.getElementById('quota-5h-countdown');
+  const cdw = document.getElementById('quota-week-countdown');
+  if (window._LAST_QUOTA_5H_RESET && cd5) cd5.innerText = formatCountdown(window._LAST_QUOTA_5H_RESET);
+  if (window._LAST_QUOTA_WEEK_RESET && cdw) cdw.innerText = formatCountdown(window._LAST_QUOTA_WEEK_RESET);
+}, 1000);
 
 setInterval(refreshData, 3000);
 refreshData();
