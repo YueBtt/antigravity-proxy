@@ -1,7 +1,7 @@
 /**
  * [task_local]
- * # 每 6 小时自动执行一次领币（0点、6点、12点、18点第5分钟）
- * 5 0,6,12,18 * * * ezcomplete_daily.js, tag=EZCompleteUI自动领币, img-url=https://raw.githubusercontent.com/crossutility/Quantumult-X/master/quantumult-x.png, enabled=true
+ * # 每 4 小时自动执行一次领币（0点、4点、8点、12点、16点、20点第5分钟）
+ * 5 0,4,8,12,16,20 * * * ezcomplete_daily.js, tag=EZCompleteUI自动领币, img-url=https://raw.githubusercontent.com/crossutility/Quantumult-X/master/quantumult-x.png, enabled=true
  *
  * [rewrite_local]
  * # 抓取 Token 重写规则（双向监听：请求头与响应体）
