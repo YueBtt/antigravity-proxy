@@ -2456,7 +2456,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         if not prompt:
             prompt = "A beautiful scenic view"
 
-        u_token = get_ez_valid_token()
+        acc, u_token = get_ez_next_available_account_and_token()
         if not u_token:
             err_text = "【EZCompleteUI 生图失败】未能获取到有效凭据 Token，请检查账号状态。"
             self.send_response(200)
