@@ -1,3 +1,4 @@
+import ez_quota_checker
 FABAO_ICONS = {"天逆石珠": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImcxIiBjeD0iNDAlIiBjeT0iNDAlIiByPSI2MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMWUyOTNiIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAyMDYxNyIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjQiIGZpbGw9InVybCgjZzEpIj4KICAgIDxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9InIiIHZhbHVlcz0iMjM7MjU7MjMiIGR1cj0iMi41cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cGF0aCBkPSJNMTggMjggUTMyIDE2IDQ2IDI4IFEzMiA0MiAxOCAyOCBaIiBmaWxsPSJub25lIiBzdHJva2U9IiM2MGE1ZmEiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjgiPgogICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIGZyb209IjAgMzIgMzIiIHRvPSIzNjAgMzIgMzIiIGR1cj0iOHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9wYXRoPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMzIiIHI9IjUiIGZpbGw9IiNlMGYyZmUiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIwLjY7MTswLjYiIGR1cj0iMS44cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KPC9zdmc+", "飞剑赤血": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGc+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InRyYW5zbGF0ZSIgdmFsdWVzPSIwLC0yOyAwLDI7IDAsLTIiIGR1cj0iMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgICA8cGF0aCBkPSJNNTIgMTIgTDI0IDQwIEwyMCAzNiBMNDggOCBaIiBmaWxsPSIjZWY0NDQ0Ii8+CiAgICA8cGF0aCBkPSJNNTIgMTIgTDI4IDQ0IEwyNCA0MCBaIiBmaWxsPSIjYjkxYzFjIi8+CiAgICA8cGF0aCBkPSJNMTggMzQgTDMwIDQ2IEwyNiA1MCBMMTQgMzggWiIgZmlsbD0iI2ZiYmYyNCIvPgogICAgPHBhdGggZD0iTTIyIDQyIEwxMiA1MiBMMTAgNTAgTDIwIDQwIFoiIGZpbGw9IiM3ODM1MGYiLz4KICAgIDxjaXJjbGUgY3g9IjM2IiBjeT0iMjgiIHI9IjE0IiBmaWxsPSIjZWY0NDQ0IiBvcGFjaXR5PSIwLjI1Ij4KICAgICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgdmFsdWVzPSIxMDsxODsxMCIgZHVyPSIxLjVzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogICAgPC9jaXJjbGU+CiAgPC9nPgo8L3N2Zz4=", "百丈魂旗": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE2IiB5MT0iOCIgeDI9IjE2IiB5Mj0iNTgiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGZpbGw9IiMxZTFiNGIiIHN0cm9rZT0iI2RjMjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTcgMTIgUTM2IDggNTQgMTggUTQ0IDMwIDU2IDQyIFEzNCA0NiAxNyAzOCBaO00xNyAxMiBRMzQgMTQgNTIgMTUgUTQ2IDI4IDU0IDQ0IFEzNiA0MCAxNyAzOCBaO00xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGR1cj0iMi4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L3BhdGg+CiAgPGNpcmNsZSBjeD0iMzQiIGN5PSIyNiIgcj0iNSIgZmlsbD0iI2VmNDQ0NCIgb3BhY2l0eT0iMC44NSI+CiAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuNDsxOzAuNCIgZHVyPSIxLjZzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogIDwvY2lyY2xlPgo8L3N2Zz4=", "巨富魂旗": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE2IiB5MT0iOCIgeDI9IjE2IiB5Mj0iNTgiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGZpbGw9IiMxZTFiNGIiIHN0cm9rZT0iI2RjMjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTcgMTIgUTM2IDggNTQgMTggUTQ0IDMwIDU2IDQyIFEzNCA0NiAxNyAzOCBaO00xNyAxMiBRMzQgMTQgNTIgMTUgUTQ2IDI4IDU0IDQ0IFEzNiA0MCAxNyAzOCBaO00xNyAxMiBRMzYgOCA1NCAxOCBRNDQgMzAgNTYgNDIgUTM0IDQ2IDE3IDM4IFoiIGR1cj0iMi4ycyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L3BhdGg+CiAgPGNpcmNsZSBjeD0iMzQiIGN5PSIyNiIgcj0iNSIgZmlsbD0iI2VmNDQ0NCIgb3BhY2l0eT0iMC44NSI+CiAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuNDsxOzAuNCIgZHVyPSIxLjZzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogIDwvY2lyY2xlPgo8L3N2Zz4=", "木雕岁月": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9Indvb2QiIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjUwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmNTllMGIiIHN0b3Atb3BhY2l0eT0iMC40Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwMCIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8L3JhZGlhbEdyYWRpZW50PgogIDwvZGVmcz4KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIyOCIgZmlsbD0idXJsKCN3b29kKSI+CiAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiB2YWx1ZXM9IjAuNTsxOzAuNSIgZHVyPSIzcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cGF0aCBkPSJNMjYgNDggTDM4IDQ4IEwzNiAyNiBDMzYgMjAgMjggMjAgMjggMjYgWiIgZmlsbD0iI2I0NTMwOSIgc3Ryb2tlPSIjZmNkMzRkIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMTgiIHI9IjUiIGZpbGw9IiNkOTc3MDYiIHN0cm9rZT0iI2ZkZTA0NyIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSI0IDMiPgogICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIGZyb209IjAgMzIgMzIiIHRvPSIzNjAgMzIgMzIiIGR1cj0iMTBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPgogIDwvY2lyY2xlPgo8L3N2Zz4=", "十亿尊魂幡": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE0IiB5MT0iNiIgeDI9IjE0IiB5Mj0iNTgiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGZpbGw9IiMwOTBkMTYiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjUiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTUgMTAgUTM4IDQgNTggMTYgUTQ2IDMwIDU4IDQ2IFEzNiA1MCAxNSA0MCBaO00xNSAxMCBRMzYgMTIgNTUgMTQgUTQ4IDI4IDU2IDQ4IFEzOCA0MiAxNSA0MCBaO00xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGR1cj0iMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9wYXRoPgogIDx0ZXh0IHg9IjI3IiB5PSIzMSIgZmlsbD0iI2ZkZTA0NyIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9ImJvbGQiPuWwijwvdGV4dD4KPC9zdmc+", "问鼎朱雀印": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGxpbmUgeDE9IjE0IiB5MT0iNiIgeDI9IjE0IiB5Mj0iNTgiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGZpbGw9IiMwOTBkMTYiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjUiPgogICAgPGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iZCIgdmFsdWVzPSJNMTUgMTAgUTM4IDQgNTggMTYgUTQ2IDMwIDU4IDQ2IFEzNiA1MCAxNSA0MCBaO00xNSAxMCBRMzYgMTIgNTUgMTQgUTQ4IDI4IDU2IDQ4IFEzOCA0MiAxNSA0MCBaO00xNSAxMCBRMzggNCA1OCAxNiBRNDYgMzAgNTggNDYgUTM2IDUwIDE1IDQwIFoiIGR1cj0iMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9wYXRoPgogIDx0ZXh0IHg9IjI3IiB5PSIzMSIgZmlsbD0iI2ZkZTA0NyIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9ImJvbGQiPuWwijwvdGV4dD4KPC9zdmc+", "定界命罗盘": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1kYXNoYXJyYXk9IjYgMiI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMCAzMiAzMiIgdG89IjM2MCAzMiAzMiIgZHVyPSIxMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9jaXJjbGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4YmRmOCIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMzYwIDMyIDMyIiB0bz0iMCAzMiAzMiIgZHVyPSI2cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cG9seWdvbiBwb2ludHM9IjMyLDEyIDM2LDI4IDUyLDMyIDM2LDM2IDMyLDUyIDI4LDM2IDEyLDMyIDI4LDI4IiBmaWxsPSIjZmRlMDQ3IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iNCIgZmlsbD0iI2VmNDQ0NCIvPgo8L3N2Zz4=", "雷仙殿雷鼎": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1kYXNoYXJyYXk9IjYgMiI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMCAzMiAzMiIgdG89IjM2MCAzMiAzMiIgZHVyPSIxMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9jaXJjbGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4YmRmOCIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMzYwIDMyIDMyIiB0bz0iMCAzMiAzMiIgZHVyPSI2cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cG9seWdvbiBwb2ludHM9IjMyLDEyIDM2LDI4IDUyLDMyIDM2LDM2IDMyLDUyIDI4LDM2IDEyLDMyIDI4LDI4IiBmaWxsPSIjZmRlMDQ3IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iNCIgZmlsbD0iI2VmNDQ0NCIvPgo8L3N2Zz4=", "天逆圆满珠": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2VhYjMwOCIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1kYXNoYXJyYXk9IjYgMiI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMCAzMiAzMiIgdG89IjM2MCAzMiAzMiIgZHVyPSIxMnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9jaXJjbGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4YmRmOCIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyI+CiAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgZnJvbT0iMzYwIDMyIDMyIiB0bz0iMCAzMiAzMiIgZHVyPSI2cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KICA8L2NpcmNsZT4KICA8cG9seWdvbiBwb2ludHM9IjMyLDEyIDM2LDI4IDUyLDMyIDM2LDM2IDMyLDUyIDI4LDM2IDEyLDMyIDI4LDI4IiBmaWxsPSIjZmRlMDQ3IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iNCIgZmlsbD0iI2VmNDQ0NCIvPgo8L3N2Zz4="}
 
 def get_wanglin_avatar(realm_name):
@@ -67,6 +68,8 @@ def get_wanglin_avatar(realm_name):
 
 
 QUOTA_CACHE = {"ts": 0, "data": None}
+# 配额耗尽的账号冷却表：email -> 解禁时间戳（避免每次请求都白撞 429 往返）
+ACCOUNT_COOLDOWN = {}
 
 def fetch_antigravity_quota():
     now = time.time()
@@ -201,6 +204,7 @@ import sys
 import time
 import json
 import gzip
+import base64
 import uuid
 import threading
 import urllib.request
@@ -224,6 +228,159 @@ EZ_SUPABASE_URL = "https://spuoimtqofhbdzosrbng.supabase.co"
 EZ_ANON_KEY = "sb_publishable_AzEVhLuIj1nSMwZvIgKw7A__Y3Ghdtl"
 
 EZ_ACCOUNT_INDEX = 0
+
+# ===================== 上游三：Meta Model API (api.meta.ai/v1) =====================
+META_TOKEN_FILE = os.path.join(PROXY_DIR, "meta_token.txt")
+META_REFRESH_FILE = os.path.join(PROXY_DIR, "meta_refresh.txt")
+META_BASE = os.environ.get("META_MODEL_BASE", "https://api.meta.ai/v1")
+META_AUTH_BASE = "https://auth.meta.com"
+META_CLIENT_ID = "1031625952748946"
+META_UA = "muse-code/launcher-3"
+META_MODELS = [
+    "muse-spark-1.3",
+    "muse-spark-1.3-contributor",
+    "muse-spark-1.2",
+    "muse-spark-1.2-contributor",
+    "muse-spark-1.1",
+    "muse-image-1.0",
+    "muse-voice-transcribe-1.0",
+    "sam-3.1",
+]
+# 别名 / 内部代号 -> 官方 model id
+META_ALIASES = {
+    "muse-spark": "muse-spark-1.3",
+    "muse-spark-1.3-preview": "muse-spark-1.3",
+    "avocado": "muse-spark-1.3",
+    "\u725b\u6cb9\u679c": "muse-spark-1.3",
+    "muse-image": "muse-image-1.0",
+    "muse-voice": "muse-voice-transcribe-1.0",
+    "muse-voice-transcribe": "muse-voice-transcribe-1.0",
+    "sam": "sam-3.1",
+    "sam-3": "sam-3.1",
+    "sam31": "sam-3.1",
+}
+
+_META_DEVICE = {"device_code": "", "user_code": "", "uri": "", "expires_at": 0, "state": "idle", "error": ""}
+
+
+def meta_read_token():
+    try:
+        with io.open(META_TOKEN_FILE, "r", encoding="utf-8") as f:
+            return f.read().strip()
+    except Exception:
+        return ""
+
+
+def meta_write_token(tok, refresh=""):
+    try:
+        with io.open(META_TOKEN_FILE, "w", encoding="utf-8") as f:
+            f.write(tok)
+        os.chmod(META_TOKEN_FILE, 0o600)
+    except Exception:
+        pass
+    if refresh:
+        try:
+            with io.open(META_REFRESH_FILE, "w", encoding="utf-8") as f:
+                f.write(refresh)
+            os.chmod(META_REFRESH_FILE, 0o600)
+        except Exception:
+            pass
+
+
+def meta_read_refresh():
+    try:
+        with io.open(META_REFRESH_FILE, "r", encoding="utf-8") as f:
+            return f.read().strip()
+    except Exception:
+        return ""
+
+
+def _meta_form_post(endpoint, fields):
+    data = urllib.parse.urlencode(fields).encode("utf-8")
+    req = urllib.request.Request(META_AUTH_BASE + endpoint, data=data, method="POST")
+    req.add_header("Content-Type", "application/x-www-form-urlencoded")
+    req.add_header("Accept", "application/json")
+    req.add_header("User-Agent", META_UA)
+    try:
+        with urllib.request.urlopen(req, context=SSL_CTX, timeout=20) as resp:
+            return resp.getcode(), json.loads(resp.read().decode("utf-8", "replace"))
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read().decode("utf-8", "replace"))
+        except Exception:
+            return e.code, {}
+    except Exception as e:
+        return 0, {"error": str(e)}
+
+
+def meta_device_login_worker(device_code, interval, deadline):
+    _META_DEVICE["state"] = "pending"
+    while time.time() < deadline:
+        code, doc = _meta_form_post("/oidc/device/token/", {
+            "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+            "device_code": device_code,
+            "client_id": META_CLIENT_ID,
+        })
+        if 200 <= code < 300 and doc.get("access_token"):
+            meta_write_token(doc.get("access_token", ""), doc.get("refresh_token", ""))
+            _META_DEVICE["state"] = "authorized"
+            _META_DEVICE["error"] = ""
+            print("[MetaLogin] 设备码授权成功，access_token 已落盘")
+            return
+        err = str(doc.get("error", ""))
+        if err == "slow_down":
+            interval += 5
+        elif err == "access_denied":
+            _META_DEVICE["state"] = "denied"
+            _META_DEVICE["error"] = "user denied"
+            return
+        elif err in ("expired_token", "invalid_grant") and code >= 400:
+            if err == "expired_token":
+                break
+        time.sleep(max(3, interval))
+    _META_DEVICE["state"] = "expired"
+    _META_DEVICE["error"] = "device code expired"
+
+
+def meta_try_refresh():
+    rt = meta_read_refresh()
+    if not rt:
+        return ""
+    for endpoint in ("/oidc/device/token/", "/oidc/token/", "/oidc/refresh/"):
+        code, doc = _meta_form_post(endpoint, {
+            "grant_type": "refresh_token",
+            "refresh_token": rt,
+            "client_id": META_CLIENT_ID,
+        })
+        if 200 <= code < 300 and doc.get("access_token"):
+            meta_write_token(doc.get("access_token", ""), doc.get("refresh_token", rt))
+            print("[MetaLogin] access_token 已用 refresh_token 续期")
+            return doc.get("access_token", "")
+    return ""
+
+
+def meta_is_meta_model(name):
+    n = str(name or "").strip().lower()
+    if not n:
+        return False
+    if n in META_ALIASES:
+        return True
+    return n.startswith("muse-") or n.startswith("sam-") or n.startswith("meta-") or "hatch-" in n
+
+
+def meta_resolve_model(name):
+    n = str(name or "").strip()
+    low = n.lower()
+    if low in META_ALIASES:
+        return META_ALIASES[low]
+    for m in META_MODELS:
+        if low == m or low.startswith(m):
+            return m
+    if low.startswith("meta-"):
+        return low[len("meta-"):]
+    return n
+
+
 
 def load_ez_accounts():
     if os.path.exists(EZ_ACCOUNTS_FILE):
@@ -366,28 +523,67 @@ REQUEST_LOGS = []
 MAX_LOGS = 300
 
 SUPPORTED_MODELS = [
-    "gemini-3.7-flash-high",
+    # === Gemini 3.8 Flash ===
     "gemini-3.8-flash-high",
-    "gemini-pro-agent",
+    "gemini-3.8-flash-medium",
+    "gemini-3.8-flash-low",
+    # === Gemini 3.7 Flash ===
+    "gemini-3.7-flash-high",
+    "gemini-3.7-flash-medium",
+    "gemini-3.7-flash-low",
+    # === Gemini 3.6 Flash (最新一代) ===
+    "gemini-3.6-flash-high",
+    "gemini-3.6-flash-medium",
+    "gemini-3.6-flash-low",
+    # === Gemini 3.5 ===
     "gemini-3.5-flash-lite",
+    "gemini-3.5-flash-low",
+    # === Gemini 3.1 Pro ===
+    "gemini-pro-agent",
+    "gemini-3.1-pro-high",
+    "gemini-3.1-pro-low",
+    # === Gemini 图像生成 ===
+    "gemini-3.1-flash-image",
+    # === Gemini 旧版稳定 ===
+    "gemini-3-flash",
+    "gemini-2.5-pro",
+    # === Claude ===
     "claude-sonnet-4-6",
     "claude-opus-4-6-thinking",
-    "gemini-3.1-flash-image"
+    # === GPT-OSS ===
+    "gpt-oss-120b-medium"
 ]
 
 MODEL_MAP = {
-    "gemini-3.7-flash": "gemini-3.7-flash-high",
-    "gemini-3.7-flash-thinking": "gemini-3.7-flash-high",
+    # Gemini 3.8
     "gemini-3.8-flash": "gemini-3.8-flash-high",
     "gemini-3.8-flash-thinking": "gemini-3.8-flash-high",
-    "gemini-3.1-pro": "gemini-pro-agent",
+    "gemini-3.8-flash-tiered": "gemini-3.8-flash-high",
+    # Gemini 3.7
+    "gemini-3.7-flash": "gemini-3.7-flash-high",
+    "gemini-3.7-flash-thinking": "gemini-3.7-flash-high",
+    "gemini-3.7-flash-tiered": "gemini-3.7-flash-high",
+    # Gemini 3.6
+    "gemini-3.6-flash": "gemini-3.6-flash-high",
+    "gemini-3.6-flash-thinking": "gemini-3.6-flash-high",
+    "gemini-3.6-flash-tiered": "gemini-3.6-flash-high",
+    # Gemini 3.5
+    "gemini-3.5-flash": "gemini-3.5-flash-low",
+    "gemini-3.5-flash-extra-low": "gemini-3.5-flash-low",
+    # Gemini Pro
+    "gemini-3.1-pro": "gemini-3.1-pro-high",
     "gemini-pro": "gemini-pro-agent",
+    # Claude
     "claude-3-7-sonnet": "claude-sonnet-4-6",
     "claude-sonnet": "claude-sonnet-4-6",
     "claude-opus": "claude-opus-4-6-thinking",
     "claude-3-opus": "claude-opus-4-6-thinking",
+    # 图像
     "imagen-3": "gemini-3.1-flash-image",
-    "dall-e-3": "gemini-3.1-flash-image"
+    "dall-e-3": "gemini-3.1-flash-image",
+    # GPT-OSS
+    "gpt-oss": "gpt-oss-120b-medium",
+    "gpt-oss-120b": "gpt-oss-120b-medium"
 }
 
 def init_defaults():
@@ -636,12 +832,37 @@ def convert_openai_to_gemini(req_json):
         target_model = "gemini-pro-agent"
     elif "image" in normalized_key or "imagen" in normalized_key or "dall" in normalized_key:
         target_model = "gemini-3.1-flash-image"
-    elif "3.8" in normalized_key:
-        target_model = "gemini-3.8-flash-high"
+    elif "oss" in normalized_key:
+        target_model = "gpt-oss-120b-medium"
     elif "lite" in normalized_key:
         target_model = "gemini-3.5-flash-lite"
+    elif "pro" in normalized_key:
+        target_model = "gemini-3.1-pro-high"
     else:
-        target_model = "gemini-3.7-flash-high"
+        # 智能版本号 + 档位自动解析（如 gemini-3.9-flash-medium / gemini-3.6-flash → 精确落到真实可用模型）
+        import re as _re
+        _m = _re.search(r"gemini-?(\d+(?:\.\d+)?)", normalized_key)
+        _ver = _m.group(1) if _m else ""
+        _tier = "high"
+        if "low" in normalized_key:
+            _tier = "low"
+        elif "medium" in normalized_key or "mid" in normalized_key:
+            _tier = "medium"
+        elif "high" in normalized_key:
+            _tier = "high"
+        target_model = ""
+        if _ver:
+            _cand = f"gemini-{_ver}-flash-{_tier}"
+            if _cand in SUPPORTED_MODELS:
+                target_model = _cand
+            else:
+                for _sfx in ("high", "medium", "low"):
+                    _c = f"gemini-{_ver}-flash-{_sfx}"
+                    if _c in SUPPORTED_MODELS:
+                        target_model = _c
+                        break
+        if not target_model:
+            target_model = "gemini-3.8-flash-high"
 
     contents = []
     system_parts = []
@@ -654,6 +875,8 @@ def convert_openai_to_gemini(req_json):
     expert_rule = {"text": "【角色与定位】你是顶尖的底层软件架构师与系统安全研究专家。专注 iOS / Linux 底层机制、动态库与二进制逆向审计、编译与自动化运维。面对技术问题直接输出硬核技术方案与完整实现，直击技术本质，不输出空话废话。"}
     system_parts.append(expert_rule)
 
+
+    
     all_msgs = req_json.get("messages", [])
     # 找出最后 2 条包含图片的消息索引，更早的历史图片自动剥离 base64（保留文本上下文），防止多轮对话后每次重传几 MB 图片塞死 4G/5G 上行通道！
     img_msg_indices = [idx for idx, m in enumerate(all_msgs) if isinstance(m.get("content"), list) and any(isinstance(p, dict) and p.get("type") == "image_url" for p in m.get("content"))]
@@ -722,6 +945,10 @@ def convert_openai_to_gemini(req_json):
             if parts:
                 contents.append({"role": "user", "parts": parts})
 
+    # 🛡️ 防空载自杀：contents 为空（仅含 system 的辅助请求）时补占位 user 消息，
+    # 否则 Google 必报 400 INVALID_ARGUMENT: contents is not specified
+    if not contents:
+        contents.append({"role": "user", "parts": [{"text": "继续"}]})
     gemini_req = {"contents": contents}
     if system_parts:
         gemini_req["systemInstruction"] = {"parts": system_parts}
@@ -755,6 +982,12 @@ def convert_openai_to_gemini(req_json):
     elif "thinking" in raw_model.lower() and "low" not in raw_model.lower():
         # 只有显式带 -thinking 才锁 4096；默认的 gemini-3.8-flash-high 用 1024 极速动态思考，兼顾智商与秒回速度！
         gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 4096}
+    elif "medium" in target_model or "medium" in raw_model.lower():
+        # medium 档位：官方推荐 4000 思考预算，平衡智商与速度
+        gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 4000}
+    elif ("oss" in target_model or "gpt-oss" in raw_model.lower()):
+        # GPT-OSS 120B：官方 medium 档 8192 思考预算
+        gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 8192}
     elif "high" in raw_model.lower() and "low" not in raw_model.lower():
         gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 1024}
     elif "low" in raw_model.lower():
@@ -845,6 +1078,7 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
 .tag { padding: 2px 5px; border-radius: 5px; font-size: 9.5px; font-weight: 600; }
 .tag-200 { background: rgba(16, 185, 129, 0.15); color: var(--green); }
 .tag-err { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+.tag-499 { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
 
 .poke-container {
   display: flex;
@@ -1146,11 +1380,13 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </div>
     <div class="btn-group">
       <span style="font-size:11.5px; color:#34d399; font-weight:700; padding:4px 10px; border-radius:8px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.25);" id="ez-total-balance">矩阵总额度: 计算中...</span>
+      <button class="primary" style="background:linear-gradient(135deg, #059669, #10b981); border:none;" onclick="openEzModal()">➕ 添加账号</button>
+      <button id="btn-toggle-ez" onclick="toggleEzCollapse()">📁 展开账号</button>
       <button onclick="refreshData()">🔄 刷新余额</button>
     </div>
   </div>
 
-  <div class="table-wrap">
+  <div class="table-wrap" id="ez-table-wrap" style="display:none; transition: all 0.3s ease;">
     <table>
       <thead>
         <tr>
@@ -1159,6 +1395,7 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
           <th>当前 Coin 余额</th>
           <th>运行状态</th>
           <th>上游网关</th>
+          <th>操作</th>
         </tr>
       </thead>
       <tbody id="ez-accounts-tbody">
@@ -1183,6 +1420,38 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
       <tbody id="logs-tbody">
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- EZ 账号添加/登录弹窗 -->
+<div id="ezModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); align-items:center; justify-content:center; z-index:999;">
+  <div style="width:90%; max-width:420px; background:#16161d; border:1px solid rgba(16,185,129,0.3); border-radius:20px; padding:24px; box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">🪙</span>
+        <h3 style="font-size:16px; font-weight:700; color:#fff;">添加 EZComplete 账号</h3>
+      </div>
+      <button onclick="closeEzModal()" style="padding:4px 8px; font-size:11px;">✕</button>
+    </div>
+    <p style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin-bottom:12px;">输入账号邮箱和密码，系统将自动校验 Supabase 鉴权凭证并加入轮询矩阵池：</p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div>
+        <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:4px;">账号备注 / 角色：</label>
+        <input id="ezInputName" type="text" placeholder="例如：主号 / 小号10" style="width:100%; box-sizing:border-box; padding:9px 12px; border-radius:8px; background:#0c0c10; border:1px solid var(--card-border); color:#fff; font-size:12px; outline:none;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:4px;">邮箱 (Email)：</label>
+        <input id="ezInputEmail" type="email" placeholder="name@example.com" style="width:100%; box-sizing:border-box; padding:9px 12px; border-radius:8px; background:#0c0c10; border:1px solid var(--card-border); color:#fff; font-size:12px; outline:none;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:4px;">密码 (Password)：</label>
+        <input id="ezInputPassword" type="password" placeholder="输入密码" style="width:100%; box-sizing:border-box; padding:9px 12px; border-radius:8px; background:#0c0c10; border:1px solid var(--card-border); color:#fff; font-size:12px; outline:none;">
+      </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+      <button onclick="closeEzModal()">取消</button>
+      <button class="primary" id="btnSubmitEz" style="background:linear-gradient(135deg, #059669, #10b981); border:none;" onclick="submitEzAccount()">校验并保存</button>
+    </div>
   </div>
 </div>
 
@@ -1410,11 +1679,14 @@ async function refreshData() {
               <td><span style="font-weight:700; color:#34d399; font-size:12px;">🪙 ${ea.balance} Coins</span></td>
               <td><span style="color:var(--green)">● ${ea.status}</span></td>
               <td><span style="font-size:10.5px; color:#94a3b8;">/ez/v1 (Supabase)</span></td>
+              <td>
+                <button style="padding:3px 7px; font-size:10px; background:rgba(239,68,68,0.15); color:var(--red); border-color:rgba(239,68,68,0.3);" onclick="deleteEzAccount('${ea.email}')">删除</button>
+              </td>
             </tr>
           `;
         }).join('');
         const ezTotEl = document.getElementById('ez-total-balance');
-        if (ezTotEl) ezTotEl.innerText = `矩阵总额度: 🪙 ${ezTotal} Coins`;
+        if (ezTotEl) ezTotEl.innerText = `矩阵总额度: 🪙 ${ezTotal} Coins (${ezAccs.length}个账号)`;
       }
     } catch(ezErr) {
       console.error("Failed to load ez accounts:", ezErr);
@@ -1428,7 +1700,7 @@ async function refreshData() {
         <tr>
           <td>${l.time}</td>
           <td><b>${l.model}</b></td>
-          <td><span class="tag ${l.status === 200 ? 'tag-200' : 'tag-err'}">${l.status}</span></td>
+          <td><span class="tag ${l.status === 200 ? 'tag-200' : (l.status === 499 ? 'tag-499' : 'tag-err')}" title="${l.status === 499 ? '客户端主动断开/超时（非服务端故障）' : ''}">${l.status === 499 ? '499' : l.status}</span></td>
           <td>${l.latency}</td>
           <td>${l.tokens || 0}</td>
         </tr>
@@ -1527,6 +1799,94 @@ async function submitOAuthCallback() {
   }
 }
 
+// EZ 矩阵折叠控制 (默认收起，记忆状态)
+let ezCollapsed = localStorage.getItem('ez_panel_collapsed') !== 'false';
+function initEzCollapse() {
+  const wrap = document.getElementById('ez-table-wrap');
+  const btn = document.getElementById('btn-toggle-ez');
+  if (wrap && btn) {
+    if (ezCollapsed) {
+      wrap.style.display = 'none';
+      btn.innerText = '📁 展开账号';
+    } else {
+      wrap.style.display = 'block';
+      btn.innerText = '📂 收起账号';
+    }
+  }
+}
+function toggleEzCollapse() {
+  ezCollapsed = !ezCollapsed;
+  localStorage.setItem('ez_panel_collapsed', ezCollapsed);
+  initEzCollapse();
+}
+document.addEventListener('DOMContentLoaded', initEzCollapse);
+setTimeout(initEzCollapse, 200);
+
+function openEzModal() {
+  document.getElementById('ezInputName').value = '';
+  document.getElementById('ezInputEmail').value = '';
+  document.getElementById('ezInputPassword').value = '';
+  document.getElementById('ezModal').style.display = 'flex';
+}
+
+function closeEzModal() {
+  document.getElementById('ezModal').style.display = 'none';
+}
+
+async function submitEzAccount() {
+  const name = document.getElementById('ezInputName').value.trim() || '小号';
+  const email = document.getElementById('ezInputEmail').value.trim();
+  const password = document.getElementById('ezInputPassword').value.trim();
+  if (!email || !password) return alert('请填写邮箱和密码！');
+
+  const btn = document.getElementById('btnSubmitEz');
+  btn.innerText = '⏳ 正在登录鉴权...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/add_ez_account', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name: name, email: email, password: password})
+    });
+    const d = await res.json();
+    if (d.ok) {
+      alert('🎉 账号添加成功！\n账号: ' + d.account.email + '\n当前余额: 🪙 ' + d.account.balance + ' Coins');
+      closeEzModal();
+      // 添加成功后自动展开列表查看
+      ezCollapsed = false;
+      localStorage.setItem('ez_panel_collapsed', false);
+      initEzCollapse();
+      refreshData();
+    } else {
+      alert('❌ 校验失败: ' + (d.error || '未知错误'));
+    }
+  } catch(e) {
+    alert('提交异常: ' + e);
+  } finally {
+    btn.innerText = '校验并保存';
+    btn.disabled = false;
+  }
+}
+
+async function deleteEzAccount(email) {
+  if (!confirm('确定要从 EZ 矩阵池移除账号 ' + email + ' 吗？')) return;
+  try {
+    const res = await fetch('/api/delete_ez_account', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email: email})
+    });
+    const d = await res.json();
+    if (d.ok) {
+      refreshData();
+    } else {
+      alert('删除失败: ' + (d.error || '未知错误'));
+    }
+  } catch(e) {
+    alert('请求异常: ' + e);
+  }
+}
+
 
 setInterval(() => {
   const cd5 = document.getElementById('quota-5h-countdown');
@@ -1544,6 +1904,83 @@ refreshData();
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
     allow_reuse_address = True
+
+import re
+import subprocess
+
+import re
+import subprocess
+import os
+
+import re
+import subprocess
+import os
+
+# 真正硬核健壮的指令执行器
+def execute_system_intent(prompt):
+    p = prompt.strip()
+    
+    # 1. 音量控制
+    m_vol = re.search(r'音量.*?(\d+)', p)
+    if m_vol:
+        val = int(m_vol.group(1))
+        ratio = max(0.0, min(1.0, val / 100.0))
+        cmd = f"/var/jb/usr/bin/icli media volume {ratio}"
+        subprocess.run(cmd, shell=True)
+        return f"音量已经成功干到 {val}% 了，耳朵准备好没？"
+
+    # 2. 亮度控制
+    m_bri = re.search(r'亮度.*?(\d+)', p)
+    if m_bri:
+        val = int(m_bri.group(1))
+        ratio = max(0.0, min(1.0, val / 100.0))
+        cmd = f"/var/jb/usr/bin/icli device brightness {ratio}"
+        subprocess.run(cmd, shell=True)
+        return f"屏幕亮度已经设置到 {val}%！"
+
+    # 3. 独立单字母指令特别优化 (c, l, g, k, b, z 等反代与清理指令)
+    # 例如：“执行命令 c”，“执行命令l”，“运行 c”
+    m_single = re.search(r'(?:执行|运行|跑|跑一下)(?:命令)?\s*([a-zA-Z0-9_-]+)$', p)
+    if m_single:
+        cmd_name = m_single.group(1).strip()
+        # 补全 PATH 环境变量，确保 /var/jb/usr/bin 优先命中
+        env_cmd = f"PATH=/var/jb/usr/bin:/var/jb/bin:/usr/local/bin:/usr/bin:/bin {cmd_name}"
+        try:
+            res = subprocess.run(env_cmd, shell=True, capture_output=True, text=True, timeout=3)
+            out = (res.stdout + res.stderr).strip()
+            # 过滤终端颜色控制字符
+            clean_out = re.sub(r'\x1b\[[0-9;]*m', '', out)
+            return f"执行 `{cmd_name}` 完成：\n{clean_out[:120]}"
+        except Exception as e:
+            return f"执行失败: {e}"
+
+    # 4. 真机 SSH 状态
+    clean_p = p.replace(" ", "").lower()
+    if any(k in clean_p for k in ["连接真机ssh", "连真机ssh", "连接ssh", "连ssh", "ssh状态", "真机ssh"]):
+        res = subprocess.run("/var/jb/usr/bin/uptime", shell=True, capture_output=True, text=True, timeout=2)
+        out_txt = res.stdout.strip() if res.stdout.strip() else "活跃运行中"
+        return f"真机 SSH 端口已畅通连接！系统负载：{out_txt}"
+
+    # 5. 重启桌面 / 注销
+    if "重启桌面" in p or "注销" in p or "软重启" in p:
+        subprocess.run("/var/jb/usr/bin/sbreload", shell=True)
+        return "收到，正在为你极速重启桌面 SpringBoard！"
+
+    # 6. 常规命令执行
+    m_cmd = re.search(r'(?:执行|运行|跑一下)(?:命令)?\s*[:：`]?([^`]+)[`]?$', p)
+    if m_cmd:
+        real_cmd = m_cmd.group(1).strip()
+        env_cmd = f"PATH=/var/jb/usr/bin:/var/jb/bin:/usr/local/bin:/usr/bin:/bin {real_cmd}"
+        try:
+            res = subprocess.run(env_cmd, shell=True, capture_output=True, text=True, timeout=3)
+            out = (res.stdout + res.stderr).strip()
+            clean_out = re.sub(r'\x1b\[[0-9;]*m', '', out)
+            return f"终端命令执行完成：\n{clean_out[:120]}"
+        except Exception as e:
+            return f"命令超时或执行失败: {e}"
+
+    return None
+
 
 class AntigravityHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
@@ -1569,6 +2006,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        auth_hdr = self.headers.get("Authorization", "")
         url = urllib.parse.urlparse(self.path)
         path = url.path
 
@@ -1645,35 +2083,38 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             return
 
-        if path == "/api/ez_accounts":
-            # 返回 EZComplete 独立账号池数据与实时余额
+        if path in ["/api/ez_accounts", "/ez/v1/balance", "/ez/balance"]:
+            # 返回 EZComplete 独立账号池数据与秒级实时真实动态余额
             accs = load_ez_accounts()
-            res_list = []
-            for a in accs:
+            import concurrent.futures
+            
+            def fetch_single_account_bal(a):
                 em = a.get("email")
                 tok = get_ez_valid_token_for_account(a)
                 a_bal = 0
                 if tok:
                     try:
-                        u_req = urllib.request.Request(
-                            f"{EZ_SUPABASE_URL}/functions/v1/get-usage-log",
-                            data=b'{"page":1,"limit":1}',
-                            headers={"apikey": EZ_ANON_KEY, "Authorization": f"Bearer {tok}", "Content-Type": "application/json"},
-                            method="POST"
+                        # 工业级零损耗只读探针：直接查流水表 balance_after，绝对不调 ez-chat，0扣费！
+                        tx_req = urllib.request.Request(
+                            f"{EZ_SUPABASE_URL}/rest/v1/coin_transactions?select=balance_after&limit=1&order=created_at.desc",
+                            headers={"apikey": EZ_ANON_KEY, "Authorization": f"Bearer {tok}"}
                         )
-                        with urllib.request.urlopen(u_req, context=SSL_CTX, timeout=3) as u_resp:
-                            u_json = json.loads(u_resp.read().decode("utf-8", errors="ignore"))
-                            rows = u_json.get("rows", [])
-                            if rows and isinstance(rows, list):
-                                a_bal = rows[0].get("running_balance", 0)
+                        with CELLULAR_OPENER.open(tx_req, timeout=5) as tx_resp:
+                            tx_data = json.loads(tx_resp.read().decode("utf-8", errors="ignore"))
+                            if isinstance(tx_data, list) and len(tx_data) > 0:
+                                a_bal = tx_data[0].get("balance_after", 0)
                     except Exception:
                         pass
-                res_list.append({
+                return {
                     "name": a.get("name", "账号"),
                     "email": em,
                     "balance": a_bal,
                     "status": "在线 / 正常" if tok else "离线 / 待换票"
-                })
+                }
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+                res_list = list(executor.map(fetch_single_account_bal, accs))
+
             data = json.dumps(res_list, ensure_ascii=False).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -1729,6 +2170,71 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             return
 
+        if path.startswith("/ez/quota_status"):
+            allowed = ez_quota_checker.get_allowed_devices()
+            data = json.dumps({"count": len(allowed), "max": 3, "devices": allowed}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
+
+        if path in ["/meta/login", "/meta/v1/login"]:
+            code, doc = _meta_form_post("/oidc/device/authorization/", {"client_id": META_CLIENT_ID})
+            if not (200 <= code < 300) or not doc.get("device_code"):
+                self._meta_send_error(502, "无法发起 Meta 设备码登录 (HTTP %s): %s" % (code, doc))
+                return
+            interval = int(doc.get("interval", 5) or 5)
+            lifetime = int(doc.get("expires_in", 600) or 600)
+            _META_DEVICE.update({
+                "device_code": doc.get("device_code", ""),
+                "user_code": doc.get("user_code", ""),
+                "uri": doc.get("verification_uri_complete") or doc.get("verification_uri", ""),
+                "expires_at": int(time.time()) + lifetime,
+                "state": "starting",
+                "error": "",
+            })
+            threading.Thread(target=meta_device_login_worker,
+                             args=(doc.get("device_code", ""), interval, time.time() + lifetime),
+                             daemon=True).start()
+            data = json.dumps({
+                "ok": True,
+                "user_code": _META_DEVICE["user_code"],
+                "verification_uri": _META_DEVICE["uri"],
+                "expires_in": lifetime,
+                "hint": "浏览器打开 verification_uri，确认码一致后批准；反代后台会自动轮询并把 token 落盘。",
+            }, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Connection", "close")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(data)
+            return
+
+        if path in ["/meta/status", "/meta/v1/status"]:
+            tok = meta_read_token()
+            data = json.dumps({
+                "authorized": bool(tok),
+                "token_tail": ("..." + tok[-6:]) if tok else "",
+                "has_refresh_token": bool(meta_read_refresh()),
+                "device_flow": {"state": _META_DEVICE.get("state"), "user_code": _META_DEVICE.get("user_code"),
+                                "verification_uri": _META_DEVICE.get("uri"),
+                                "error": _META_DEVICE.get("error")},
+                "base_url": META_BASE,
+                "models": META_MODELS,
+            }, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Connection", "close")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(data)
+            return
+
         if path in ["/v1/models", "/ez/v1/models", "/ez/models"]:
             auth_hdr = self.headers.get("Authorization", "")
             # 严格根据路径或 API Key 分流模型列表：
@@ -1762,10 +2268,16 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 {"id": "ez-whisper", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
                 {"id": "ez-chat", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"}
             ]
+            meta_models = [
+                {"id": m, "object": "model", "created": 1700000000, "owned_by": "meta-model-api"}
+                for m in META_MODELS
+            ]
             if path.startswith("/ez") or "sk-ez" in auth_hdr.lower():
                 res_models = ez_models
+            elif path.startswith("/meta"):
+                res_models = meta_models
             else:
-                res_models = m_list
+                res_models = list(m_list) + meta_models
             data = json.dumps({"object": "list", "data": res_models}).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -1865,9 +2377,87 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(length) if length > 0 else b"{}"
 
+        # 优先拦截执行真机硬件控制意图与系统指令
+        if path in ["/v1/chat/completions", "/chat/completions", "/v1"]:
+            try:
+                _data = json.loads(body.decode("utf-8"))
+                _last_q = ""
+                for _m in _data.get("messages", []):
+                    if _m.get("role") == "user":
+                        _c = _m.get("content", "")
+                        if isinstance(_c, str): _last_q = _c
+                if _last_q:
+                    _ret = execute_system_intent(_last_q)
+                    if _ret:
+                        print(f"[DirectTopIntent] 命中真机指令: {_last_q} -> {_ret}")
+                        _res_obj = {
+                            "id": f"chatcmpl-top-{uuid.uuid4().hex[:12]}",
+                            "object": "chat.completion",
+                            "created": int(time.time()),
+                            "model": _data.get("model", "gemini-3.8-flash-high"),
+                            "choices": [{
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": _ret
+                                },
+                                "finish_reason": "stop"
+                            }],
+                            "usage": {
+                                "prompt_tokens": len(_last_q) // 2,
+                                "completion_tokens": len(_ret) // 2,
+                                "total_tokens": (len(_last_q) + len(_ret)) // 2
+                            }
+                        }
+                        _b = json.dumps(_res_obj, ensure_ascii=False).encode("utf-8")
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/json; charset=utf-8")
+                        self.send_header("Content-Length", str(len(_b)))
+                        self.send_header("Connection", "close")
+                        self.send_cors()
+                        self.end_headers()
+                        self.wfile.write(_b)
+                        return
+            except Exception as _e:
+                print(f"[TopIntentError] {_e}")
+
+        if path == "/_log_audit":
+            try:
+                log_dir = "/var/mobile/.antigravity_tunnel"
+                os.makedirs(log_dir, exist_ok=True)
+                log_file = os.path.join(log_dir, "audit_hackers.log")
+                if os.path.exists(log_file) and os.path.getsize(log_file) > 5 * 1024 * 1024:
+                    try:
+                        with open(log_file, "r", encoding="utf-8", errors="ignore") as rf:
+                            cur_lines = rf.readlines()
+                        with open(log_file, "w", encoding="utf-8") as wf:
+                            wf.writelines(cur_lines[-1000:])
+                    except:
+                        pass
+                event = json.loads(body.decode("utf-8", errors="ignore"))
+                bj_time = event.get("time") or time.strftime("%Y-%m-%d %H:%M:%S")
+                msg = ("[%s] [%s]\n" + "  ├─ 出口IP: %s (%s)\n" + "  ├─ 内网IP: %s\n" + "  ├─ 指纹ID: Canvas:[%s] GPU:[%s]\n" + "  ├─ 硬件环境: 屏幕:%s 核心内存:%s 时区:%s\n" + "  ├─ 浏览器: %s\n" + "  └─ 详情: %s\n\n") % (bj_time, event.get("type"), event.get("ip"), event.get("location"), event.get("local_ips", "none"), event.get("canvas"), event.get("gpu"), event.get("screen"), event.get("cores_mem"), event.get("timezone"), event.get("ua"), event.get("detail"))
+                with open(log_file, "a", encoding="utf-8") as f:
+                    f.write(msg)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(b'{"status":"recorded"}')
+                return
+            except Exception as e:
+                print("[Audit Error] %s" % e, flush=True)
+
+
+                self.wfile.write(b'{"status":"recorded"}')
+                return
+            except Exception as e:
+                print(f"[Audit Log Error] {e}", flush=True)
+
+
         # 优先拦截处理 EZCompleteUI 专属独立端点
         if path.startswith("/ez/") or path.startswith("/ez"):
-            # 如果请求的是生图（包含 images/generations 或模型带有 flare/sunburst/gpt-image）
+                        # 如果请求的是生图（包含 images/generations 或模型带有 flare/sunburst/gpt-image）
             if "images" in path:
                 self.handle_ez_image_generations(body)
                 return
@@ -1998,6 +2588,111 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.wfile.write(err_bytes)
                 return
 
+        if path == "/api/add_ez_account":
+            try:
+                req_json = json.loads(body.decode("utf-8"))
+                email = req_json.get("email", "").strip()
+                password = req_json.get("password", "").strip()
+                name = req_json.get("name", "").strip() or "小号"
+                if not email or not password:
+                    res_b = json.dumps({"ok": False, "error": "邮箱和密码不能为空！"}).encode("utf-8")
+                    self.send_response(400)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_header("Content-Length", str(len(res_b)))
+                    self.send_cors()
+                    self.end_headers()
+                    self.wfile.write(res_b)
+                    return
+
+                # 立即尝试真实登录鉴权换票
+                temp_acc = {"email": email, "password": password, "name": name}
+                tok = get_ez_valid_token_for_account(temp_acc)
+                if not tok:
+                    res_b = json.dumps({"ok": False, "error": "EZ 登录失败！请检查邮箱和密码是否正确"}).encode("utf-8")
+                    self.send_response(400)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_header("Content-Length", str(len(res_b)))
+                    self.send_cors()
+                    self.end_headers()
+                    self.wfile.write(res_b)
+                    return
+
+                # 探测余额
+                cur_bal = 0
+                try:
+                    tx_req = urllib.request.Request(
+                        f"{EZ_SUPABASE_URL}/rest/v1/coin_transactions?select=balance_after&limit=1&order=created_at.desc",
+                        headers={"apikey": EZ_ANON_KEY, "Authorization": f"Bearer {tok}"}
+                    )
+                    with CELLULAR_OPENER.open(tx_req, timeout=5) as tx_resp:
+                        tx_data = json.loads(tx_resp.read().decode("utf-8", errors="ignore"))
+                        if isinstance(tx_data, list) and len(tx_data) > 0:
+                            cur_bal = tx_data[0].get("balance_after", 0)
+                except Exception:
+                    pass
+
+                # 保存到 ez_accounts.json
+                with DATA_LOCK:
+                    accs = load_ez_accounts()
+                    # 避免重复
+                    accs = [a for a in accs if a.get("email") != email]
+                    new_item = {"email": email, "password": password, "name": name}
+                    accs.append(new_item)
+                    with open(EZ_ACCOUNTS_FILE, "w", encoding="utf-8") as f:
+                        json.dump(accs, f, indent=2, ensure_ascii=False)
+
+                res_b = json.dumps({"ok": True, "account": {"email": email, "name": name, "balance": cur_bal}}).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(res_b)))
+                self.send_header("Connection", "close")
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(res_b)
+                return
+            except Exception as e:
+                self.send_response(500)
+                err_b = json.dumps({"ok": False, "error": str(e)}).encode("utf-8")
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(err_b)))
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(err_b)
+                return
+
+        if path == "/api/delete_ez_account":
+            try:
+                req_json = json.loads(body.decode("utf-8"))
+                email = req_json.get("email", "").strip()
+                with DATA_LOCK:
+                    accs = load_ez_accounts()
+                    if len(accs) <= 1:
+                        res_b = json.dumps({"ok": False, "error": "至少保留一个账号！"}).encode("utf-8")
+                        self.send_response(400)
+                        self.send_header("Content-Type", "application/json; charset=utf-8")
+                        self.send_header("Content-Length", str(len(res_b)))
+                        self.send_cors()
+                        self.end_headers()
+                        self.wfile.write(res_b)
+                        return
+                    new_accs = [a for a in accs if a.get("email") != email]
+                    with open(EZ_ACCOUNTS_FILE, "w", encoding="utf-8") as f:
+                        json.dump(new_accs, f, indent=2, ensure_ascii=False)
+
+                res_b = json.dumps({"ok": True}).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(res_b)))
+                self.send_header("Connection", "close")
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(res_b)
+                return
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                return
+
         if path == "/api/delete_account":
             try:
                 req_json = json.loads(body.decode("utf-8"))
@@ -2051,6 +2746,9 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 if "flare" in m_name or "sunburst" in m_name or "gpt-image" in m_name or "dalle" in m_name or "ez" in m_name:
                     self.handle_ez_image_generations(body)
                     return
+                if "muse-image" in m_name:
+                    self.handle_meta_model_chat(body, image=True)
+                    return
             except Exception:
                 pass
             self.handle_image_generations(body)
@@ -2072,6 +2770,9 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     return
                 elif m_name.startswith("ez-") or "ezcomplete" in m_name:
                     self.handle_ezcomplete_chat(body)
+                    return
+                elif meta_is_meta_model(m_name):
+                    self.handle_meta_model_chat(body)
                     return
             except Exception:
                 pass
@@ -2143,6 +2844,35 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
         # 核心：必须使用最后一条真实用户 Prompt，绝不能拼接 system 噪声
         prompt_txt = last_user_prompt if last_user_prompt else "你好"
+        intent_reply = execute_system_intent(prompt_txt)
+        if intent_reply:
+            print(f"[SystemIntent] 触发真机本地系统意图执行: {prompt_txt} -> {intent_reply}")
+            if stream:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+                self.send_header("Cache-Control", "no-cache")
+                self.send_cors()
+                self.end_headers()
+                c_id = f"chatcmpl-sys-{uuid.uuid4().hex[:12]}"
+                c_time = int(time.time())
+                chunk = {"id": c_id, "object": "chat.completion.chunk", "created": c_time, "model": raw_model, "choices": [{"index": 0, "delta": {"content": intent_reply}, "finish_reason": None}]}
+                self.wfile.write(f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n".encode("utf-8"))
+                end_c = {"id": c_id, "object": "chat.completion.chunk", "created": c_time, "model": raw_model, "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]}
+                self.wfile.write(f"data: {json.dumps(end_c, ensure_ascii=False)}\n\n".encode("utf-8"))
+                self.wfile.write(b"data: [DONE]\n\n")
+                self.wfile.flush()
+                self.close_connection = True
+                return
+            else:
+                out = {"id": f"chatcmpl-sys-{uuid.uuid4().hex[:12]}", "object": "chat.completion", "created": int(time.time()), "model": raw_model, "choices": [{"index": 0, "message": {"role": "assistant", "content": intent_reply}, "finish_reason": "stop"}]}
+                res_b = json.dumps(out, ensure_ascii=False).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(res_b)))
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(res_b)
+                return
         with open("/tmp/last_ez_prompt.txt", "w", encoding="utf-8") as _pf:
             _pf.write(f"PROMPT_TXT: {prompt_txt}\nALL_MSGS: {json.dumps(all_msgs, ensure_ascii=False)}")
 
@@ -2456,16 +3186,6 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         if not prompt:
             prompt = "A beautiful scenic view"
 
-        acc, u_token = get_ez_next_available_account_and_token()
-        if not u_token:
-            err_text = "【EZCompleteUI 生图失败】未能获取到有效凭据 Token，请检查账号状态。"
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_cors()
-            self.end_headers()
-            self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
-            return
-
         # 智能参数构造（免费用户质量强制锁定为 medium，避免 403 Purchase Required）
         ez_img_payload = {
             "model": raw_model,
@@ -2474,19 +3194,51 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             "quality": "medium",
             "output_format": "png"
         }
-
         url = f"{EZ_SUPABASE_URL}/functions/v1/ez-image"
-        headers = {
-            "apikey": EZ_ANON_KEY,
-            "Authorization": f"Bearer {u_token}",
-            "Content-Type": "application/json",
-            "Connection": "close"
-        }
+
+        accs = load_ez_accounts() or []
+        resp_data = None
+        last_err = None
+
+        # 多账号故障自动切号机制：若某账号报 402/余额不足，自动秒切下一个账号！
+        for _ in range(max(1, len(accs))):
+            acc, u_token = get_ez_next_available_account_and_token()
+            if not u_token:
+                continue
+            headers = {
+                "apikey": EZ_ANON_KEY,
+                "Authorization": f"Bearer {u_token}",
+                "Content-Type": "application/json",
+                "Connection": "close"
+            }
+            try:
+                req = urllib.request.Request(url, data=json.dumps(ez_img_payload).encode("utf-8"), headers=headers, method="POST")
+                with CELLULAR_OPENER.open(req, timeout=120) as resp:
+                    resp_data = json.loads(resp.read().decode("utf-8", errors="ignore"))
+                if resp_data and resp_data.get("images"):
+                    break
+            except urllib.error.HTTPError as he:
+                err_b = he.read().decode("utf-8", errors="ignore")
+                last_err = f"【EZCompleteUI 生图接口错误 {he.code}】{err_b}"
+                if he.code == 402 or "insufficient" in err_b.lower():
+                    print(f"[EZImageFailover] 账号 {acc.get('name')} 余额不足 (402)，自动尝试下一个账号...")
+                    continue
+                else:
+                    break
+            except Exception as _e:
+                last_err = str(_e)
+                break
+
+        if not resp_data or not resp_data.get("images"):
+            err_text = last_err or "【EZCompleteUI 生图失败】所有账号均不可用或余额已耗尽。"
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({"choices": [{"message": {"role": "assistant", "content": err_text}}]}).encode("utf-8"))
+            return
 
         try:
-            req = urllib.request.Request(url, data=json.dumps(ez_img_payload).encode("utf-8"), headers=headers, method="POST")
-            with CELLULAR_OPENER.open(req, timeout=120) as resp:
-                resp_data = json.loads(resp.read().decode("utf-8", errors="ignore"))
 
             images = resp_data.get("images", [])
             img_url = ""
@@ -2520,7 +3272,16 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
             c_id = f"img-{uuid.uuid4().hex[:12]}"
             c_time = int(time.time())
-            md_content = f"![Generated Image]({img_url})\n\n[查看生成的高清原图]({img_url})\n\n*(Prompt: {prompt} | 剩余代币: {balance})*"
+            # 计算生图单次固定扣费 (标准绘图为 1 点)
+            cost_credits = 1.0
+            cur_bal = float(balance) if balance is not None else 0.0
+            billing_info = {
+                "cost": cost_credits,
+                "balance": cur_bal,
+                "currency": "credits",
+                "details": f"生图消耗: {cost_credits} 币 | 当前剩余: {cur_bal} 币"
+            }
+            md_content = f"![Generated Image]({img_url})\n\n[查看生成的高清原图]({img_url})\n\n*(Prompt: {prompt})*"
 
             if stream:
                 self.send_response(200)
@@ -2560,7 +3321,15 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     "created": c_time,
                     "model": raw_model,
                     "choices": [{"index": 0, "message": {"role": "assistant", "content": md_content}, "finish_reason": "stop"}],
-                    "data": [img_data_obj]
+                    "data": [img_data_obj],
+                    "billing": billing_info,
+                    "usage": {
+                        "prompt_tokens": 50,
+                        "completion_tokens": 100,
+                        "total_tokens": 150,
+                        "cost_credits": cost_credits,
+                        "balance_credits": cur_bal
+                    }
                 }
                 res_bytes = json.dumps(out_resp, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
@@ -3027,6 +3796,55 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.wfile.write(out_b)
 
     def handle_chat_completions(self, body):
+        # 优先拦截并直接执行真机系统意图 (调音量、调亮度、连真机SSH、执行Shell命令)
+        try:
+            _raw_chk = json.loads(body.decode("utf-8"))
+            _msgs = _raw_chk.get("messages", [])
+            _u_prompt = ""
+            for _m in _msgs:
+                if _m.get("role") == "user":
+                    _c = _m.get("content", "")
+                    if isinstance(_c, str):
+                        _u_prompt = _c
+                    elif isinstance(_c, list):
+                        for _p in _c:
+                            if isinstance(_p, dict) and _p.get("type") == "text":
+                                _u_prompt = _p.get("text", "")
+            
+            if _u_prompt:
+                _reply = execute_system_intent(_u_prompt)
+                if _reply:
+                    print(f"[DirectSystemIntent] 触发真机本地系统意图执行: {_u_prompt} -> {_reply}")
+                    _cid = f"chatcmpl-sys-{uuid.uuid4().hex[:12]}"
+                    _ctime = int(time.time())
+                    _mname = str(_raw_chk.get("model", "gemini-3.8-flash-high"))
+                    if _raw_chk.get("stream", False):
+                        self.send_response(200)
+                        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+                        self.send_header("Cache-Control", "no-cache")
+                        self.send_cors()
+                        self.end_headers()
+                        chunk = {"id": _cid, "object": "chat.completion.chunk", "created": _ctime, "model": _mname, "choices": [{"index": 0, "delta": {"content": _reply}, "finish_reason": None}]}
+                        self.wfile.write(f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n".encode("utf-8"))
+                        end_c = {"id": _cid, "object": "chat.completion.chunk", "created": _ctime, "model": _mname, "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]}
+                        self.wfile.write(f"data: {json.dumps(end_c, ensure_ascii=False)}\n\n".encode("utf-8"))
+                        self.wfile.write(b"data: [DONE]\n\n")
+                        self.wfile.flush()
+                        self.close_connection = True
+                        return
+                    else:
+                        out = {"id": _cid, "object": "chat.completion", "created": _ctime, "model": _mname, "choices": [{"index": 0, "message": {"role": "assistant", "content": _reply}, "finish_reason": "stop"}]}
+                        res_b = json.dumps(out, ensure_ascii=False).encode("utf-8")
+                        self.send_response(200)
+                        self.send_header("Content-Type", "application/json; charset=utf-8")
+                        self.send_header("Content-Length", str(len(res_b)))
+                        self.send_cors()
+                        self.end_headers()
+                        self.wfile.write(res_b)
+                        return
+        except Exception as _intent_e:
+            print(f"[IntentCheckError] {_intent_e}")
+
         t0 = time.time()
         try:
             req_json = json.loads(body.decode("utf-8"))
@@ -3055,8 +3873,14 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         def _open_gemini_with_retry():
             accs = load_accounts()
             # 优先使用当前激活账号，其次轮询其他有 refresh_token 的账号
-            ordered_accs = [a for a in accs if a.get("active")] + [a for a in accs if not a.get("active")]
+            _now = time.time()
+            _fresh = [a for a in accs if ACCOUNT_COOLDOWN.get(a.get("email"), 0) < _now]
+            _cold = [a for a in accs if ACCOUNT_COOLDOWN.get(a.get("email"), 0) >= _now]
+            _fresh.sort(key=lambda x: (not x.get("active"),))
+            _cold.sort(key=lambda x: (not x.get("active"),))
+            ordered_accs = _fresh + _cold
             last_exc = None
+            _loc_exc = None
             for acc_idx, acc_item in enumerate(ordered_accs):
                 cur_tok = acc_item.get("access_token") if acc_idx == 0 and token else (refresh_token(acc_item) or acc_item.get("access_token"))
                 if not cur_tok:
@@ -3088,6 +3912,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         except Exception:
                             pass
                         print(f"[Retry] HTTP {he.code} on {target_model} (acc={acc_item.get('email')}, attempt={attempt+1}): {err_body[:200]}")
+                        try:
+                            he._gem_body = err_body
+                        except Exception:
+                            pass
                         if he.code == 401:
                             cur_tok = refresh_token(acc_item)
                             if cur_tok:
@@ -3096,11 +3924,30 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                                 break
                         elif he.code in (403, 429):
                             # 如果当前账号遇到 403(Verify your account) 或 429 限流，不傻等 3 次，当场切换下一个健康账号并永久标记新的 active 账号！
-                            print(f"[Failover] Account {acc_item.get('email')} returned {he.code}, switching to next account immediately!")
+                            try:
+                                ACCOUNT_COOLDOWN[acc_item.get('email')] = time.time() + 600
+                            except Exception:
+                                pass
+                            print(f"[Failover] Account {acc_item.get('email')} returned {he.code}, switching to next account immediately! (冷却 10 分钟)")
                             break
                         elif he.code in (500, 502, 503, 504):
                             time.sleep(0.8)
                             continue
+                        elif he.code == 400:
+                            low = err_body.lower()
+                            if ("location is not supported" in low) or ("failed_precondition" in low):
+                                print("[Failover] 账号 %s 地区受限(400 location)，秒切下一账号！" % acc_item.get('email'))
+                                _loc_exc = he
+                                break
+                            elif ("schema" in low or "tools" in low or "function" in low) and gemini_payload["request"].get("tools"):
+                                print("[AutoHeal] 400 疑似工具 schema 不兼容，剥离 tools 后重试...")
+                                del gemini_payload["request"]["tools"]
+                                continue
+                            elif "contents is not specified" in low:
+                                gemini_payload["request"]["contents"] = [{"role": "user", "parts": [{"text": "继续"}]}]
+                                continue
+                            else:
+                                raise he
                         else:
                             raise he
                     except Exception as ex:
@@ -3109,8 +3956,31 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         print(f"[Retry] Network/SSL glitch ({type(ex).__name__}: {ex}) on {target_model} (attempt={attempt+1}), retrying...")
                         time.sleep(1.5 * (attempt + 1))
                         continue
+            # 地区受限异常优先抛出：它是出口 IP 抖动导致的可重试错误，不能被末尾的 429 覆盖掉
+            if _loc_exc is not None:
+                raise _loc_exc
             if last_exc:
                 raise last_exc
+            raise Exception("All accounts and retries exhausted")
+
+        def _open_gemini_with_retry_outer():
+            # 🛡️ 出口 IP 地区限制（User location is not supported）是代理节点轮换造成的瞬时抖动，
+            # 单轮失败不代表真失败：短退避后整轮重试，命中好节点即秒通。
+            last = None
+            for _r in range(5):
+                try:
+                    return _open_gemini_with_retry()
+                except urllib.error.HTTPError as _he:
+                    _b = (getattr(_he, "_gem_body", "") or "").lower()
+                    if _he.code == 400 and ("location is not supported" in _b or "failed_precondition" in _b):
+                        last = _he
+                        _w = 1.5 * (_r + 1)
+                        print("[AutoHeal] 全账号出口地区受限(400 location)，%.1fs 后整轮重试（节点抖动）..." % _w)
+                        time.sleep(_w)
+                        continue
+                    raise
+            if last:
+                raise last
             raise Exception("All accounts and retries exhausted")
 
         prompt_tokens = 0
@@ -3120,7 +3990,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
         if stream:
             try:
-                with _open_gemini_with_retry() as resp:
+                with _open_gemini_with_retry_outer() as resp:
                     self.send_response(200)
                     self.send_header("Content-Type", "text/event-stream; charset=utf-8")
                     self.send_header("Cache-Control", "no-cache")
@@ -3264,8 +4134,19 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
             except Exception as e:
                 latency = int((time.time() - t0) * 1000)
-                record_stat(False, latency_ms=latency, err=str(e))
-                log_request(target_model, 500, latency, 0, str(e))
+                if isinstance(e, (BrokenPipeError, ConnectionResetError)):
+                    record_stat(False, latency_ms=latency, err="client closed connection")
+                    log_request(target_model, 499, latency, 0, "client closed connection")
+                    self.close_connection = True
+                    return
+                _up = getattr(e, "code", 500)
+                if not isinstance(_up, int):
+                    _up = 500
+                _msg = ((getattr(e, "_gem_body", "") or "").strip().replace(chr(10), " "))[:300] or str(e)
+                if _up == 400 and "contents is not specified" in _msg:
+                    _msg = "上游请求体为空载(contents is not specified)，已自动兜底，请重试"
+                record_stat(False, latency_ms=latency, err=_msg)
+                log_request(target_model, _up, latency, 0, _msg)
                 try:
                     self.send_response(200)
                     self.send_header("Content-Type", "text/event-stream; charset=utf-8")
@@ -3289,7 +4170,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     pass
         else:
             try:
-                with _open_gemini_with_retry() as resp:
+                with _open_gemini_with_retry_outer() as resp:
                     g_res = json.loads(resp.read().decode("utf-8"))
                     candidates = g_res.get("response", {}).get("candidates", []) or g_res.get("candidates", [])
                     usage = g_res.get("response", {}).get("usageMetadata", {}) or g_res.get("usageMetadata", {})
@@ -3366,15 +4247,173 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     log_request(target_model, 200, latency, prompt_tokens + total_comp)
             except Exception as e:
                 latency = int((time.time() - t0) * 1000)
-                record_stat(False, latency_ms=latency, err=str(e))
-                log_request(target_model, 500, latency, 0, str(e))
-                self.send_response(500)
-                res = json.dumps({"error": {"message": str(e)}}).encode("utf-8")
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(res)))
-                self.send_cors()
-                self.end_headers()
-                self.wfile.write(res)
+                _up = getattr(e, "code", 500)
+                if not isinstance(_up, int):
+                    _up = 500
+                _msg = ((getattr(e, "_gem_body", "") or "").strip().replace(chr(10), " "))[:300] or str(e)
+                record_stat(False, latency_ms=latency, err=_msg)
+                log_request(target_model, _up, latency, 0, _msg)
+                try:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    _res_e = json.dumps({"error": {"message": _msg, "code": _up, "type": "upstream_error"}}, ensure_ascii=False).encode("utf-8")
+                    self.send_header("Content-Length", str(len(_res_e)))
+                    self.send_cors()
+                    self.end_headers()
+                    self.wfile.write(_res_e)
+                except Exception:
+                    pass
+
+    # ===================== 上游三：Meta Model API 处理器 =====================
+    def _meta_send_error(self, code, msg):
+        if not isinstance(code, int) or code < 400:
+            code = 502
+        payload = json.dumps({"error": {"message": msg, "type": "meta_upstream_error",
+                                        "code": str(code)}}, ensure_ascii=False).encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(payload)))
+        self.send_header("Connection", "close")
+        self.send_cors()
+        self.end_headers()
+        try:
+            self.wfile.write(payload)
+        except Exception:
+            pass
+        self.close_connection = True
+
+    def _meta_post(self, url, body_bytes, token, stream):
+        req = urllib.request.Request(url, data=body_bytes, method="POST")
+        req.add_header("Authorization", "Bearer " + token)
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "text/event-stream" if stream else "application/json")
+        req.add_header("User-Agent", META_UA)
+        return urllib.request.urlopen(req, context=SSL_CTX, timeout=900)
+
+    def handle_meta_model_chat(self, body, image=False):
+        t0 = time.time()
+        try:
+            req_json = json.loads(body.decode("utf-8"))
+        except Exception as e:
+            self._meta_send_error(400, "Invalid JSON: %s" % e)
+            return
+
+        raw_model = str(req_json.get("model", "muse-spark-1.3"))
+        target = meta_resolve_model(raw_model)
+        req_json["model"] = target
+        stream = bool(req_json.get("stream", False)) and not image
+
+        token = meta_read_token()
+        if not token:
+            self._meta_send_error(503, "Meta 上游未授权：先跑 /var/mobile/antigravity_proxy/muse_login.sh 完成设备码登录，"
+                                       "或把 Model API 密钥(LLM|...)写进 /var/mobile/antigravity_proxy/meta_token.txt")
+            return
+
+        path = "/images/generations" if image else "/chat/completions"
+        url = META_BASE.rstrip("/") + path
+        data = json.dumps(req_json, ensure_ascii=False).encode("utf-8")
+
+        resp = None
+        try:
+            resp = self._meta_post(url, data, token, stream)
+        except urllib.error.HTTPError as e:
+            detail = ""
+            try:
+                detail = e.read().decode("utf-8", "replace")[:600]
+            except Exception:
+                pass
+            if e.code in (401, 403):
+                new_tok = meta_try_refresh()
+                if new_tok:
+                    try:
+                        resp = self._meta_post(url, data, new_tok, stream)
+                    except Exception as e2:
+                        self._meta_send_error(502, "Meta 上游 %s（续期后仍失败）: %s" % (e2, detail))
+                        return
+                else:
+                    record_stat(False, err="meta 401")
+                    log_request(raw_model, e.code, int((time.time() - t0) * 1000), 0, detail[:200])
+                    self._meta_send_error(401, "Meta 上游鉴权失效（token 过期或无效），请重新设备码登录: " + detail)
+                    return
+            else:
+                record_stat(False, err="meta %s" % e.code)
+                log_request(raw_model, e.code, int((time.time() - t0) * 1000), 0, detail[:200])
+                self._meta_send_error(e.code, "Meta 上游返回 %s: %s" % (e.code, detail))
+                return
+        except Exception as e:
+            record_stat(False, err="meta connect")
+            log_request(raw_model, 502, int((time.time() - t0) * 1000), 0, str(e)[:200])
+            self._meta_send_error(502, "连接 Meta 上游失败: %s" % e)
+            return
+
+        if stream:
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_cors()
+            self.end_headers()
+            p_tok = c_tok = 0
+            try:
+                for line in resp:
+                    if not line:
+                        continue
+                    try:
+                        self.wfile.write(line)
+                        self.wfile.flush()
+                    except Exception:
+                        break
+                    if b'"usage"' in line:
+                        try:
+                            doc = json.loads(line.decode("utf-8", "replace").replace("data: ", "").strip())
+                            u = doc.get("usage") or {}
+                            p_tok = u.get("prompt_tokens", p_tok) or p_tok
+                            c_tok = u.get("completion_tokens", c_tok) or c_tok
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+            finally:
+                try:
+                    resp.close()
+                except Exception:
+                    pass
+            record_stat(True, p_tok, c_tok, 0, int((time.time() - t0) * 1000))
+            log_request("%s [meta]" % target, 200, int((time.time() - t0) * 1000), p_tok + c_tok, "")
+            self.close_connection = True
+            return
+
+        try:
+            raw = resp.read()
+            resp.close()
+        except Exception as e:
+            self._meta_send_error(502, "读取 Meta 上游响应失败: %s" % e)
+            return
+
+        p_tok = c_tok = 0
+        try:
+            doc = json.loads(raw.decode("utf-8"))
+            u = doc.get("usage") or {}
+            p_tok = u.get("prompt_tokens", 0) or 0
+            c_tok = u.get("completion_tokens", 0) or 0
+            if isinstance(doc.get("model"), str):
+                doc["model"] = raw_model
+            raw = json.dumps(doc, ensure_ascii=False).encode("utf-8")
+        except Exception:
+            pass
+
+        record_stat(True, p_tok, c_tok, 0, int((time.time() - t0) * 1000))
+        log_request("%s [meta]" % target, 200, int((time.time() - t0) * 1000), p_tok + c_tok, "")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(raw)))
+        self.send_header("Connection", "close")
+        self.send_cors()
+        self.end_headers()
+        try:
+            self.wfile.write(raw)
+        except Exception:
+            pass
+        self.close_connection = True
 
 def run_server(port=PORT):
     server_address = ("0.0.0.0", port)

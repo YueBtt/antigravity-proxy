@@ -1,6 +1,13 @@
 # Sensitive credentials & tokens (NEVER commit real credentials)
 credentials.json
 accounts.json
+ez_accounts.json
+ez_account.json
+ez_token_*.txt
+ezcomplete_token.txt
+ezcomplete_balance.txt
+meta_token.txt
+meta_refresh.txt
 daily_stats.json
 request_logs.json
 *.env

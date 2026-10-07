@@ -42,6 +42,7 @@
 ├── com.gemini.antigravity.proxy.plist # iOS LaunchDaemon 系统级自启动配置文件
 ├── credentials.json.template      # 单账号 OAuth 凭据模板
 ├── accounts.json.template         # 多账号池配置模板
+├── ez_accounts.json.template      # EZComplete 轮询矩阵模板
 ├── README.md                      # 中文项目完全指南
 └── .gitignore                     # 敏感凭据防泄漏规则
 ```
