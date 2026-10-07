@@ -523,68 +523,51 @@ REQUEST_LOGS = []
 MAX_LOGS = 300
 
 SUPPORTED_MODELS = [
-    # === Gemini 3.8 Flash ===
+    # === Claude 5.5 High (官方正式端点最新放量模型) ===
+    "claude-sonnet-5-5-high",
+    "claude-opus-5-5-high",
+    # === Claude 4.6 (思考模型) ===
+    "claude-sonnet-4-6",
+    "claude-opus-4-6-thinking",
+    # === Gemini 3.8 Flash (最新主力高/中/低档及梯队) ===
     "gemini-3.8-flash-high",
     "gemini-3.8-flash-medium",
     "gemini-3.8-flash-low",
+    "gemini-3.8-flash-tiered",
     # === Gemini 3.7 Flash ===
     "gemini-3.7-flash-high",
     "gemini-3.7-flash-medium",
     "gemini-3.7-flash-low",
-    # === Gemini 3.6 Flash (最新一代) ===
+    "gemini-3.7-flash-tiered",
+    # === Gemini 3.6 Flash ===
     "gemini-3.6-flash-high",
     "gemini-3.6-flash-medium",
     "gemini-3.6-flash-low",
-    # === Gemini 3.5 ===
-    "gemini-3.5-flash-lite",
+    "gemini-3.6-flash-tiered",
+    # === Gemini 3.5 Flash 系列 ===
     "gemini-3.5-flash-low",
-    # === Gemini 3.1 Pro ===
-    "gemini-pro-agent",
-    "gemini-3.1-pro-high",
-    "gemini-3.1-pro-low",
-    # === Gemini 图像生成 ===
-    "gemini-3.1-flash-image",
-    # === Gemini 旧版稳定 ===
+    "gemini-3.5-flash-extra-low",
+    "gemini-3.5-flash-lite",
+    # === Gemini 3 / 2.5 极速与轻量系列 ===
     "gemini-3-flash",
-    "gemini-2.5-pro",
-    # === Claude ===
-    "claude-sonnet-4-6",
-    "claude-opus-4-6-thinking",
-    # === GPT-OSS ===
-    "gpt-oss-120b-medium"
+    "gemini-3-flash-agent",
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash-thinking",
+    # === Gemini Pro 代码/推理特化 ===
+    "gemini-pro-agent",
+    "gemini-3.1-pro-low",
+    # === Gemini 图像生成特化 ===
+    "gemini-3.1-flash-image",
+    # === 开源模型 GPT-OSS ===
+    "gpt-oss-120b-medium",
+    # === 编辑器/补全轻量预览 ===
+    "tab_flash_lite_preview",
+    "tab_jump_flash_lite_preview"
 ]
 
-MODEL_MAP = {
-    # Gemini 3.8
-    "gemini-3.8-flash": "gemini-3.8-flash-high",
-    "gemini-3.8-flash-thinking": "gemini-3.8-flash-high",
-    "gemini-3.8-flash-tiered": "gemini-3.8-flash-high",
-    # Gemini 3.7
-    "gemini-3.7-flash": "gemini-3.7-flash-high",
-    "gemini-3.7-flash-thinking": "gemini-3.7-flash-high",
-    "gemini-3.7-flash-tiered": "gemini-3.7-flash-high",
-    # Gemini 3.6
-    "gemini-3.6-flash": "gemini-3.6-flash-high",
-    "gemini-3.6-flash-thinking": "gemini-3.6-flash-high",
-    "gemini-3.6-flash-tiered": "gemini-3.6-flash-high",
-    # Gemini 3.5
-    "gemini-3.5-flash": "gemini-3.5-flash-low",
-    "gemini-3.5-flash-extra-low": "gemini-3.5-flash-low",
-    # Gemini Pro
-    "gemini-3.1-pro": "gemini-3.1-pro-high",
-    "gemini-pro": "gemini-pro-agent",
-    # Claude
-    "claude-3-7-sonnet": "claude-sonnet-4-6",
-    "claude-sonnet": "claude-sonnet-4-6",
-    "claude-opus": "claude-opus-4-6-thinking",
-    "claude-3-opus": "claude-opus-4-6-thinking",
-    # 图像
-    "imagen-3": "gemini-3.1-flash-image",
-    "dall-e-3": "gemini-3.1-flash-image",
-    # GPT-OSS
-    "gpt-oss": "gpt-oss-120b-medium",
-    "gpt-oss-120b": "gpt-oss-120b-medium"
-}
+MODEL_MAP = {}
 
 def init_defaults():
     os.makedirs(PROXY_DIR, exist_ok=True)
@@ -817,53 +800,11 @@ def _clean_schema_for_gemini(schema):
     return cleaned
 
 def convert_openai_to_gemini(req_json):
-    raw_model = req_json.get("model", "gemini-3.7-flash-high")
-    normalized_key = raw_model.lower().strip()
+    raw_model = req_json.get("model", "gemini-3.8-flash-high")
+    normalized_key = raw_model.strip()
     
-    if raw_model in SUPPORTED_MODELS:
-        target_model = raw_model
-    elif normalized_key in MODEL_MAP:
-        target_model = MODEL_MAP[normalized_key]
-    elif "opus" in normalized_key:
-        target_model = "claude-opus-4-6-thinking"
-    elif "claude" in normalized_key or "sonnet" in normalized_key:
-        target_model = "claude-sonnet-4-6"
-    elif "pro" in normalized_key:
-        target_model = "gemini-pro-agent"
-    elif "image" in normalized_key or "imagen" in normalized_key or "dall" in normalized_key:
-        target_model = "gemini-3.1-flash-image"
-    elif "oss" in normalized_key:
-        target_model = "gpt-oss-120b-medium"
-    elif "lite" in normalized_key:
-        target_model = "gemini-3.5-flash-lite"
-    elif "pro" in normalized_key:
-        target_model = "gemini-3.1-pro-high"
-    else:
-        # 智能版本号 + 档位自动解析（如 gemini-3.9-flash-medium / gemini-3.6-flash → 精确落到真实可用模型）
-        import re as _re
-        _m = _re.search(r"gemini-?(\d+(?:\.\d+)?)", normalized_key)
-        _ver = _m.group(1) if _m else ""
-        _tier = "high"
-        if "low" in normalized_key:
-            _tier = "low"
-        elif "medium" in normalized_key or "mid" in normalized_key:
-            _tier = "medium"
-        elif "high" in normalized_key:
-            _tier = "high"
-        target_model = ""
-        if _ver:
-            _cand = f"gemini-{_ver}-flash-{_tier}"
-            if _cand in SUPPORTED_MODELS:
-                target_model = _cand
-            else:
-                for _sfx in ("high", "medium", "low"):
-                    _c = f"gemini-{_ver}-flash-{_sfx}"
-                    if _c in SUPPORTED_MODELS:
-                        target_model = _c
-                        break
-        if not target_model:
-            target_model = "gemini-3.8-flash-high"
-
+    # 原生纯血模式：用户传什么模型就用什么模型直连上游，严禁擅自偷换或降级
+    target_model = raw_model
     contents = []
     system_parts = []
     
@@ -2235,12 +2176,12 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             return
 
-        if path in ["/v1/models", "/ez/v1/models", "/ez/models"]:
+        if path in ["/v1/models", "/ez/v1/models", "/ez/models", "/meta/v1/models", "/meta/models"]:
             auth_hdr = self.headers.get("Authorization", "")
-            # 严格根据路径或 API Key 分流模型列表：
-            # 1. 如果路径以 /ez 开头，或者 Key 携带 ez 标识，则【只返回】EZCompleteUI 模型
-            # 2. 否则只返回纯正 Google Antigravity / Claude 官方模型，彻底物理隔离，绝不混合！
-            m_list = [{"id": m, "object": "model", "created": 1700000000, "owned_by": "google-antigravity"} for m in SUPPORTED_MODELS]
+            raw_key = auth_hdr.replace("Bearer ", "").strip()
+            
+            # 三大上游模型物理隔离列表：
+            antigravity_models = [{"id": m, "object": "model", "created": 1700000000, "owned_by": "google-antigravity"} for m in SUPPORTED_MODELS]
             ez_models = [
                 {"id": "gpt-6-astra", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
                 {"id": "gpt-6-luna", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
@@ -2263,21 +2204,26 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 {"id": "chatgpt-image-latest", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
                 {"id": "dalle3_hd", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
                 {"id": "dalle3_standard", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
-                {"id": "sora_pro_10s", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
-                {"id": "sora_10s", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
-                {"id": "ez-whisper", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
-                {"id": "ez-chat", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"}
+                {"id": "ez-image", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "flux-schnell", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
+                {"id": "recraft-v3", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"}
             ]
             meta_models = [
                 {"id": m, "object": "model", "created": 1700000000, "owned_by": "meta-model-api"}
                 for m in META_MODELS
             ]
-            if path.startswith("/ez") or "sk-ez" in auth_hdr.lower():
+
+            # 严格根据 Key 或路径完全隔离，绝不混淆：
+            if path.startswith("/ez") or raw_key.startswith("sk-ez") or "ez" in raw_key.lower():
                 res_models = ez_models
-            elif path.startswith("/meta"):
+            elif path.startswith("/meta") or raw_key.startswith("sk-meta") or "meta" in raw_key.lower():
                 res_models = meta_models
+            elif raw_key.startswith("sk-antigravity") or "anti" in raw_key.lower():
+                res_models = antigravity_models
             else:
-                res_models = list(m_list) + meta_models
+                # 默认根据路径分流，根路径无特征 key 默认按上游一返回
+                res_models = antigravity_models
+
             data = json.dumps({"object": "list", "data": res_models}).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -2759,25 +2705,77 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             return
 
         if path in ["/v1/chat/completions", "/chat/completions", "/v1", "/"]:
+            auth_hdr = self.headers.get("Authorization", "")
+            raw_key = auth_hdr.replace("Bearer ", "").strip()
+            
             try:
                 chk = json.loads(body.decode("utf-8"))
-                m_name = str(chk.get("model", "")).lower()
-                if m_name == "gemini-3.1-flash-image":
+                m_name = str(chk.get("model", "")).strip()
+            except Exception:
+                chk = {}
+                m_name = ""
+
+            # 判断 Key 的归属通道
+            is_ez_key = path.startswith("/ez") or raw_key.startswith("sk-ez") or "ez" in raw_key.lower()
+            is_meta_key = path.startswith("/meta") or raw_key.startswith("sk-meta") or "meta" in raw_key.lower()
+            is_anti_key = (not is_ez_key and not is_meta_key) or raw_key.startswith("sk-antigravity") or "anti" in raw_key.lower()
+
+            # 三大通道专属合法模型集合
+            ez_model_ids = {
+                "gpt-6-astra", "gpt-6-luna", "gpt-6-sol", "gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra",
+                "gpt-5", "gpt-5-pro", "gpt-5-mini", "gpt-4o", "gpt-4o-mini", "gpt-4o-mini-2024-07-18",
+                "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o4-mini", "gpt-image-2.5-flare",
+                "gpt-image-2.5-sunburst", "chatgpt-image-latest", "dalle3_hd", "dalle3_standard",
+                "ez-image", "flux-schnell", "recraft-v3", "sora_pro_10s", "sora_10s", "ez-whisper", "ez-chat"
+            }
+            meta_model_ids = set(META_MODELS) | set(META_ALIASES.keys())
+            anti_model_ids = set(SUPPORTED_MODELS)
+
+            # === 通道一：EZComplete 专线 ===
+            if is_ez_key:
+                if m_name and (m_name not in ez_model_ids and not any(k in m_name.lower() for k in ["gpt-", "ez-", "dalle", "flux", "recraft", "sora"])):
+                    self.send_response(403)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_cors()
+                    self.end_headers()
+                    err = {"error": {"message": f"越权拦截: 当前 Key 为 EZComplete 专线 Key，禁止调用非 EZComplete 模型 '{m_name}'！各上游各用各的 Key 与模型！", "type": "upstream_key_mismatch", "code": 403}}
+                    self.wfile.write(json.dumps(err, ensure_ascii=False).encode("utf-8"))
+                    return
+                if "flare" in m_name.lower() or "sunburst" in m_name.lower() or "gpt-image" in m_name.lower() or "dalle" in m_name.lower() or "flux" in m_name.lower() or "recraft" in m_name.lower():
+                    self.handle_ez_image_generations(body)
+                else:
+                    self.handle_ezcomplete_chat(body)
+                return
+
+            # === 通道二：Meta Model API 专线 ===
+            if is_meta_key:
+                if m_name and not meta_is_meta_model(m_name) and m_name not in meta_model_ids:
+                    self.send_response(403)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_cors()
+                    self.end_headers()
+                    err = {"error": {"message": f"越权拦截: 当前 Key 为 Meta 专线 Key，禁止调用非 Meta 模型 '{m_name}'！各上游各用各的 Key 与模型！", "type": "upstream_key_mismatch", "code": 403}}
+                    self.wfile.write(json.dumps(err, ensure_ascii=False).encode("utf-8"))
+                    return
+                self.handle_meta_model_chat(body)
+                return
+
+            # === 通道三：Google Antigravity 专线 ===
+            if is_anti_key:
+                # 严防用 Antigravity Key 串门调用 EZ 或 Meta 模型
+                if m_name in ez_model_ids or meta_is_meta_model(m_name) or m_name in meta_model_ids:
+                    self.send_response(403)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_cors()
+                    self.end_headers()
+                    err = {"error": {"message": f"越权拦截: 当前 Key 为 Antigravity 专线 Key (sk-antigravity)，禁止调用外部上游模型 '{m_name}'！请使用对应的专属 Key！", "type": "upstream_key_mismatch", "code": 403}}
+                    self.wfile.write(json.dumps(err, ensure_ascii=False).encode("utf-8"))
+                    return
+                if m_name.lower() == "gemini-3.1-flash-image":
                     self.handle_image_generations(body)
                     return
-                elif "flare" in m_name or "sunburst" in m_name or "gpt-image" in m_name:
-                    self.handle_ez_image_generations(body)
-                    return
-                elif m_name.startswith("ez-") or "ezcomplete" in m_name:
-                    self.handle_ezcomplete_chat(body)
-                    return
-                elif meta_is_meta_model(m_name):
-                    self.handle_meta_model_chat(body)
-                    return
-            except Exception:
-                pass
-            self.handle_chat_completions(body)
-            return
+                self.handle_chat_completions(body)
+                return
 
         self.send_response(404)
         self.send_header("Content-Length", "0")
@@ -3868,7 +3866,8 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             return
 
         mode_endpoint = "streamGenerateContent?alt=sse" if stream else "generateContent"
-        target_url = f"{ANTIGRAVITY_API_URL}/v1internal:{mode_endpoint}"
+        _base_api = "https://cloudcode-pa.googleapis.com" if "5-5" in str(target_model) else ANTIGRAVITY_API_URL
+        target_url = f"{_base_api}/v1internal:{mode_endpoint}"
 
         def _open_gemini_with_retry():
             accs = load_accounts()
