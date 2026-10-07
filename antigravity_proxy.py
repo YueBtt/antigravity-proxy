@@ -567,6 +567,78 @@ SUPPORTED_MODELS = [
     "tab_jump_flash_lite_preview"
 ]
 
+# ================= 全动态实时模型嗅探与缓存机制 =================
+_CACHED_DYNAMIC_MODELS = []
+_LAST_DYNAMIC_FETCH_TIME = 0
+
+def fetch_upstream_dynamic_models():
+    """
+    当客户端（如 Minis）点击“刷新模型”按钮请求 /v1/models 时，
+    自动实时向 Google Antigravity 官方 API 发起最新可用模型池探测，
+    实现 0 手动干预、一键自动更新官方最新模型！
+    """
+    global _CACHED_DYNAMIC_MODELS, _LAST_DYNAMIC_FETCH_TIME
+    now = time.time()
+    # 30秒内使用内存缓存，防止连续狂点导致上游限流；超过 30 秒自动穿透拉取官方最新
+    if _CACHED_DYNAMIC_MODELS and (now - _LAST_DYNAMIC_FETCH_TIME < 30):
+        return _CACHED_DYNAMIC_MODELS
+
+    tok = get_valid_token()
+    if not tok:
+        return _CACHED_DYNAMIC_MODELS or SUPPORTED_MODELS
+
+    discovered_models = set(SUPPORTED_MODELS)
+    # 固定必须存在的 5.5 High 模型（官方生产正式节点）
+    discovered_models.add("claude-sonnet-5-5-high")
+    discovered_models.add("claude-opus-5-5-high")
+    discovered_models.add("gemini-3.1-flash-image")
+
+    endpoints = [
+        "https://cloudcode-pa.googleapis.com",
+        "https://daily-cloudcode-pa.googleapis.com"
+    ]
+    for ep in endpoints:
+        try:
+            req = urllib.request.Request(
+                f"{ep}/v1internal:fetchAvailableModels",
+                data=b"{}",
+                headers={
+                    "Authorization": f"Bearer {tok}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "antigravity/2.9.1 darwin/arm64"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    raw_models = data.get("models", {})
+                    for m_id in raw_models.keys():
+                        # 过滤掉内部不可用占位符 chat_*
+                        if m_id.startswith("chat_"):
+                            continue
+                        discovered_models.add(m_id)
+        except Exception as e:
+            pass
+
+    # 排序：Claude 置顶，其次 Gemini 3.8/3.7/3.6，最后其他
+    def _model_sort_key(m):
+        m_lower = m.lower()
+        if "5-5-high" in m_lower: return (0, m)
+        if "opus" in m_lower: return (1, m)
+        if "sonnet" in m_lower: return (2, m)
+        if "3.8" in m_lower: return (3, m)
+        if "3.7" in m_lower: return (4, m)
+        if "3.6" in m_lower: return (5, m)
+        if "3.5" in m_lower: return (6, m)
+        if "image" in m_lower: return (7, m)
+        return (8, m)
+
+    sorted_list = sorted(list(discovered_models), key=_model_sort_key)
+    _CACHED_DYNAMIC_MODELS = sorted_list
+    _LAST_DYNAMIC_FETCH_TIME = now
+    return _CACHED_DYNAMIC_MODELS
+
+
 MODEL_MAP = {}
 
 def init_defaults():
@@ -2181,7 +2253,8 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             raw_key = auth_hdr.replace("Bearer ", "").strip()
             
             # 三大上游模型物理隔离列表：
-            antigravity_models = [{"id": m, "object": "model", "created": 1700000000, "owned_by": "google-antigravity"} for m in SUPPORTED_MODELS]
+            dyn_models = fetch_upstream_dynamic_models()
+            antigravity_models = [{"id": m, "object": "model", "created": 1700000000, "owned_by": "google-antigravity"} for m in dyn_models]
             ez_models = [
                 {"id": "gpt-6-astra", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
                 {"id": "gpt-6-luna", "object": "model", "created": 1700000000, "owned_by": "ezcomplete-supabase"},
