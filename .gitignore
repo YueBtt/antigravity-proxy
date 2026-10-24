@@ -8,8 +8,20 @@ ezcomplete_token.txt
 ezcomplete_balance.txt
 meta_token.txt
 meta_refresh.txt
+codebuddy_credentials.json
 daily_stats.json
 request_logs.json
+*.pid
+*.bak*
+*.before_*
+*.cold_*
+*.cool_*
+*.loc*
+*.panel*
+*.prefix*
+*.new
+healthy_bak
+.argon_alerted
 *.env
 
 # Byte-compiled / optimized / DLL files

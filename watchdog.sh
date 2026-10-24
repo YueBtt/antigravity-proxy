@@ -44,7 +44,7 @@ kill_proxy() {
 }
 
 while true; do
-    CODE=$(/usr/bin/curl -s -o /dev/null -m 6 -w '%{http_code}' --connect-timeout 2 http://127.0.0.1:8088/api/stats 2>/dev/null)
+    CODE=$(/usr/bin/curl -s -o /dev/null -m 12 -w '%{http_code}' --connect-timeout 3 http://127.0.0.1:8088/api/stats 2>/dev/null)
 
     if [ "$CODE" = "200" ]; then
         FAIL_COUNT=0
@@ -55,26 +55,28 @@ while true; do
                 echo "$(date '+%Y-%m-%d %H:%M:%S') [Watchdog] 代码变更且语法校验通过，已静默更新健康备份底座" >> "$LOG"
             fi
         fi
-        sleep 5
+        sleep 10
         continue
     fi
 
     FAIL_COUNT=$((FAIL_COUNT + 1))
     echo "$(date '+%Y-%m-%d %H:%M:%S') [Watchdog] 8088 探测异常 (HTTP=$CODE, Fail=$FAIL_COUNT)" >> "$LOG"
 
-    if [ $FAIL_COUNT -lt 2 ]; then
-        sleep 2
+    if [ $FAIL_COUNT -lt 3 ]; then
+        sleep 3
         continue
     fi
 
-    if [ $FAIL_COUNT -ge 3 ] && [ -f "$BAK" ] && ! cmp -s "$MAIN" "$BAK"; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [Watchdog] 确认已完全死锁 (连续 3 次失败)，执行精准重启..." >> "$LOG"
+
+    if [ -f "$BAK" ] && ! cmp -s "$MAIN" "$BAK"; then
         echo "$(date '+%Y-%m-%d %H:%M:%S') [Watchdog] 连续 3 次失败，AUTO-ROLLBACK 回滚 healthy_bak" >> "$LOG"
         cp -f "$BAK" "$MAIN"
     fi
 
     /usr/bin/killall -9 python3.9 python3 > /dev/null 2>&1
-    sleep 1
+    sleep 2
     start_proxy
     FAIL_COUNT=0
-    sleep 4
+    sleep 5
 done
