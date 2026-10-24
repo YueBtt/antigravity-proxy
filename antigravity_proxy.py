@@ -1679,10 +1679,11 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     <table>
       <thead>
         <tr>
-          <th>权益包名称</th>
-          <th>绑定 UID / 账号</th>
-          <th>剩余 / 总额度</th>
-          <th>周期有效截止</th>
+          <th>账号标识</th>
+          <th>绑定 UID</th>
+          <th>总剩余 / 总额度</th>
+          <th>权益包明细</th>
+          <th>最长有效期</th>
           <th>运行状态</th>
           <th>上游网关</th>
         </tr>
@@ -2082,11 +2083,23 @@ async function refreshData() {
       if (cbTbody && Array.isArray(cbAccs)) {
         cbTbody.innerHTML = cbAccs.map(ca => {
           cbTotal += (Number(ca.remain) || 0);
+          const pkgCount = ca.pkg_count ? `${ca.pkg_count}个权益包` : '1个权益包';
+          const pkgsDesc = (ca.packages && ca.packages.length > 0) 
+            ? ca.packages.map(p => `<div style="font-size:11px; color:#94a3b8; white-space:nowrap;">• ${p.name}: <span style="color:#38bdf8;">${p.remain}</span>/${p.total} (${p.end_time ? p.end_time.split(' ')[0] : ''})</div>`).join('')
+            : `<div style="font-size:11px; color:#94a3b8;">${pkgCount}</div>`;
           return `
             <tr>
               <td><span class="tag" style="background:rgba(2,132,199,0.15); color:#38bdf8;">${ca.name}</span></td>
               <td><b style="cursor:pointer;" onclick="toggleEmailMask()">${maskText(ca.uid)}</b></td>
               <td><span style="font-weight:700; color:#38bdf8; font-size:12px;">⚡ ${ca.remain} / ${ca.total} Credits</span></td>
+              <td>
+                <details style="cursor:pointer;">
+                  <summary style="font-size:11.5px; color:#38bdf8; outline:none;">聚合包含 ${pkgCount} ▾</summary>
+                  <div style="margin-top:6px; max-height:120px; overflow-y:auto; padding:4px 6px; background:rgba(0,0,0,0.25); border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                    ${pkgsDesc}
+                  </div>
+                </details>
+              </td>
               <td><span style="font-size:11px; color:#94a3b8;">${ca.end_time}</span></td>
               <td><span style="color:var(--green)">● ${ca.status}</span></td>
               <td><span style="font-size:10.5px; color:#38bdf8;">copilot.tencent.com/v2</span></td>
@@ -2094,7 +2107,7 @@ async function refreshData() {
           `;
         }).join('');
         const cbTotEl = document.getElementById('cb-total-balance');
-        if (cbTotEl) cbTotEl.innerText = `专线总额度: ⚡ ${cbTotal.toFixed(2)} Credits (${cbAccs.length}个权益包)`;
+        if (cbTotEl) cbTotEl.innerText = `专线总额度: ⚡ ${cbTotal.toFixed(2)} Credits (${cbAccs.length}个账号)`;
       }
     } catch(cbErr) {
       console.error("Failed to load CodeBuddy accounts:", cbErr);
@@ -3094,15 +3107,29 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     with urllib.request.urlopen(req, timeout=5) as resp:
                         d = json.loads(resp.read().decode())
                         accs = d.get("data", {}).get("Response", {}).get("Data", {}).get("Accounts", [])
-                        for a in accs:
+                        if accs:
+                            tot_remain = sum(float(a.get("CycleCapacityRemainPrecise") or a.get("CapacityRemain") or 0) for a in accs)
+                            tot_size = sum(float(a.get("CycleCapacitySizePrecise") or a.get("CapacitySize") or 0) for a in accs)
+                            tot_used = sum(float(a.get("CycleCapacityUsedPrecise") or a.get("CapacityUsed") or 0) for a in accs)
+                            latest_end = max((a.get("CycleEndTime") or a.get("ExpiredTime") or "") for a in accs)
+                            pkgs = []
+                            for a in accs:
+                                pkgs.append({
+                                    "name": a.get("PackageName", "权益包"),
+                                    "remain": str(a.get("CycleCapacityRemainPrecise") or a.get("CapacityRemain", 0)),
+                                    "total": str(a.get("CycleCapacitySizePrecise") or a.get("CapacitySize", 0)),
+                                    "end_time": a.get("CycleEndTime") or a.get("ExpiredTime", "")
+                                })
                             res_list.append({
-                                "name": a.get("PackageName", "CodeBuddy"),
+                                "name": "腾讯 CodeBuddy 核心账号",
                                 "uid": uid,
-                                "remain": str(a.get("CycleCapacityRemainPrecise") or a.get("CapacityRemain", 0)),
-                                "total": str(a.get("CycleCapacitySizePrecise") or a.get("CapacitySize", 0)),
-                                "used": str(a.get("CycleCapacityUsedPrecise") or a.get("CapacityUsed", 0)),
-                                "end_time": a.get("CycleEndTime") or a.get("ExpiredTime", "永久"),
-                                "status": "在线 / 活跃"
+                                "remain": f"{tot_remain:.2f}" if tot_remain % 1 != 0 else str(int(tot_remain)),
+                                "total": f"{tot_size:.2f}" if tot_size % 1 != 0 else str(int(tot_size)),
+                                "used": f"{tot_used:.2f}" if tot_used % 1 != 0 else str(int(tot_used)),
+                                "end_time": latest_end or "永久",
+                                "status": "在线 / 活跃",
+                                "pkg_count": len(accs),
+                                "packages": pkgs
                             })
             except Exception as e:
                 res_list.append({
