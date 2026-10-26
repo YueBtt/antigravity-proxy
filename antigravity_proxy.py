@@ -1805,14 +1805,14 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     <table>
       <thead>
         <tr>
-          <th>账号备注</th>
-          <th>绑定手机 / UID</th>
-          <th>当前套餐权益</th>
-          <th>可用额度比例</th>
-          <th>权益有效截止</th>
-          <th>运行状态</th>
-          <th>上游网关</th>
-          <th>操作</th>
+          <th style="min-width:70px; white-space:nowrap;">账号备注</th>
+          <th style="min-width:140px; white-space:nowrap;">绑定手机 / UID</th>
+          <th style="min-width:110px; white-space:nowrap;">当前套餐权益</th>
+          <th style="min-width:110px; white-space:nowrap;">可用额度比例</th>
+          <th style="min-width:120px; white-space:nowrap;">权益有效截止</th>
+          <th style="min-width:90px; white-space:nowrap;">运行状态</th>
+          <th style="min-width:100px; white-space:nowrap;">上游网关</th>
+          <th style="min-width:60px; white-space:nowrap;">操作</th>
         </tr>
       </thead>
       <tbody id="today-accounts-tbody">
@@ -2255,7 +2255,7 @@ async function refreshData() {
       console.error("Failed to load CodeBuddy accounts:", cbErr);
     }
 
-    // 渲染 EZCompleteUI 专属独立卡片列表
+    // 渲染 Today AI 专属独立卡片列表
     try {
       const todayRes = await fetch('/api/today_accounts', { cache: 'no-store' });
       const todayAccs = await todayRes.json();
@@ -2263,15 +2263,15 @@ async function refreshData() {
       if (todayTbody && Array.isArray(todayAccs)) {
         todayTbody.innerHTML = todayAccs.map(ta => `
           <tr>
-            <td><span class="tag" style="background:rgba(245,158,11,0.15); color:#fbbf24;">${ta.name}</span></td>
-            <td><b style="cursor:pointer;" onclick="toggleEmailMask()">${maskText(ta.phone)}</b><div style="font-size:10px; color:#64748b;">${ta.uid}</div></td>
-            <td><span style="font-weight:700; color:#fbbf24; font-size:12px;">🌟 ${ta.plan} 尊享版</span></td>
-            <td><span style="font-weight:700; color:var(--green); font-size:12px;">⚡ 剩余 ${ta.remain_percent}</span><div style="font-size:10px; color:#64748b;">3亿 Tokens配额</div></td>
-            <td><span style="font-size:11px; color:#94a3b8;">${ta.end_time}</span></td>
-            <td><span style="color:var(--green)">● ${ta.status}</span></td>
-            <td><span style="font-size:10.5px; color:#fbbf24;">api.todayai.cn</span></td>
-            <td>
-              <button style="padding:3px 7px; font-size:10px; background:rgba(239,68,68,0.15); color:var(--red); border-color:rgba(239,68,68,0.3);" onclick="deleteTodayAccount('${ta.phone}')">删除</button>
+            <td style="white-space:nowrap; vertical-align:middle;"><span class="tag" style="background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); display:inline-block; font-size:11px; padding:3px 9px; border-radius:6px; letter-spacing:0.5px;">${ta.name}</span></td>
+            <td style="vertical-align:middle;"><b style="cursor:pointer; font-size:12.5px; color:#fff;" onclick="toggleEmailMask()">${maskText(ta.phone)}</b><div style="font-size:10px; color:#64748b; font-family:monospace; margin-top:2px;">${ta.uid}</div></td>
+            <td style="white-space:nowrap; vertical-align:middle;"><div style="font-weight:700; color:#fbbf24; font-size:12px;">🌟 ${ta.plan} 尊享版</div><div style="font-size:10px; color:#94a3b8;">智能体旗舰权益</div></td>
+            <td style="white-space:nowrap; vertical-align:middle;"><div style="font-weight:700; color:var(--green); font-size:12px;">⚡ 剩余 ${ta.remain_percent}</div><div style="font-size:10px; color:#64748b;">3亿 Tokens配额</div></td>
+            <td style="white-space:nowrap; vertical-align:middle;"><span style="font-size:11px; color:#94a3b8;">${ta.end_time}</span></td>
+            <td style="white-space:nowrap; vertical-align:middle;"><span style="color:var(--green); font-weight:600;">● ${ta.status}</span></td>
+            <td style="white-space:nowrap; vertical-align:middle;"><span style="font-size:10.5px; color:#fbbf24; font-family:monospace;">api.todayai.cn</span></td>
+            <td style="vertical-align:middle;">
+              <button style="padding:4px 8px; font-size:10.5px; background:rgba(239,68,68,0.15); color:var(--red); border-color:rgba(239,68,68,0.3); border-radius:6px;" onclick="deleteTodayAccount('${ta.phone}')">删除</button>
             </td>
           </tr>
         `).join('');
