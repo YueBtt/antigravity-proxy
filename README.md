@@ -1,13 +1,13 @@
 # Antigravity Multi-Upstream Proxy · 天道宗门多上游网关 (iOS / Linux)
 
 > 🚀 **专为 iOS 越狱（Dopamine Rootless）与 Linux 打造的端侧多上游高吞吐 AI 网关。**  
-> 零第三方 pip 依赖，单文件原生 Python 3.8+ 架构，集成黑曜石修真命盘与 Liquid Glass 响应式监控看板。打通全球六大高价值上游生态，彻底实现 **各大专线上游各用各的专用 Key 与路径鉴权，物理级严格隔离**，全链路 1:1 原生纯血直通！
+> 零第三方 pip 依赖，单文件原生 Python 3.8+ 架构，集成黑曜石修真命盘与 Liquid Glass 响应式监控看板。打通全球七大高价值上游生态，彻底实现 **各大专线上游各用各的专用 Key 与路径鉴权，物理级严格隔离**，全链路 1:1 原生纯血直通！
 
 ---
 
 ## 🌟 核心特性与架构升级
 
-### 1. 🛡️ 六大上游 Key 与模型物理级严格隔离（2026 最新标准）
+### 1. 🛡️ 七大上游 Key 与模型物理级严格隔离（2026 最新标准）
 各上游各用各的专用 Key，各管各的模型池，彻底杜绝混用与跨界越权：
 - **专线一：Google Antigravity 专线 (`sk-antigravity`)**
   - **纯血原生模型**：独家接入官方最新 **Claude 5.5 High**（`claude-sonnet-5-5-high`、`claude-opus-5-5-high`）、Claude 4.6 深度思考（`claude-opus-4-6-thinking`、`claude-sonnet-4-6`）、Gemini 3.8 全系全档位、Gemini 3.7、`gemini-3.1-flash-image` 原生生图等。
@@ -28,6 +28,10 @@
 - **专线六：Tencent LightVela 腾讯算力专线 (`sk-lightvela` / 路径 `/lv/v1`)**
   - **深度求索满血长推理版**：`deepseek-v4-pro-202606`、`auto` 等。
   - **沙盒算力直通**：每月白送 4500 算力积分，0 损耗直连满血 DeepSeek 推理。
+- **专线七：Today AI 个人智能体专线 (`sk-todayai` / 路径 `/today/v1`)**
+  - **3 亿 Tokens 尊享配额**：官方 Pro 会员权益，支持 `todayai`、`deepseek-v4.1-flash`、`minimax-m31-flash`、`glm-5.3` 等。
+  - **无感自动换票**：基于 Session Token 自动与 `todayai.cn/api/token` 握手换取 JWT 密钥。
+  - **异步轮询平替流式**：原生支持逐字渐进式流式输出，带专属橙金色折叠控制面板与弹窗绑定。
 
 ### 2. ⚡ 起标题直接丢弃优化 (HTTP 204 No Content)
 - 智能识别客户端后台静默触发的“给对话起标题”小请求；
