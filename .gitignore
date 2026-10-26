@@ -9,6 +9,7 @@ ezcomplete_balance.txt
 meta_token.txt
 meta_refresh.txt
 codebuddy_credentials.json
+todayai_credentials.json
 daily_stats.json
 request_logs.json
 *.pid
