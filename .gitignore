@@ -24,6 +24,13 @@ request_logs.json
 healthy_bak
 .argon_alerted
 *.env
+operating_policy*.txt
+image_policy.txt
+ez_image_jailbreak.txt
+model_policy_map.json
+model_policy_map.json.healthy_bak
+model_policy/*.md
+!model_policy/*.template
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

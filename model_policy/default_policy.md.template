@@ -1,0 +1,4 @@
+# Model-Specific Policy Template
+
+This file serves as a system prompt / policy injected at the root of conversation messages for mapped models.
+Write your system constraints, operating policy, or guidelines here.

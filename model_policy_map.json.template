@@ -1,0 +1,4 @@
+{
+  "model-name-here": "model_policy/policy_file_name.md",
+  "*": "model_policy/default_policy.md"
+}

@@ -45,6 +45,12 @@
 - 系统级 LaunchDaemon (`com.gemini.antigravity.proxy.plist`) 保活。
 - 看门狗静默扫描：健康态自动固化 `healthy_bak` 镜像；若遭遇进程异常或语法崩溃，9 秒内自动触发回滚并物理重启，保证服务 7x24 小时坚如磐石。
 
+### 5. 🎯 全局模型策略注入系统 (Model Policy Injection Middleware)
+- **多通道解耦挂载**：支持基于 `model_policy_map.json` 的模型级策略注入，与单一上游通道完全解耦，支持通用通配符 `*` 规则；
+- **文件指纹热加载**：中间件自动计算策略文件的 SHA256 签名与 mtime，文件变更即刻生效，无需重启服务进程；
+- **智能 System 首条合并**：若用户请求体已存在 System Message，中间件将前置拼接注入策略并自动去重隔离，杜绝覆盖用户原始配置；
+- **全通道自动拦截**：覆盖 OpenAI `/v1/chat/completions` 与 Anthropic `/v1/messages` 双协议生态。
+
 ---
 
 ## 🚀 支持模型与专线接入矩阵
@@ -57,6 +63,8 @@
 | **Kilo Free 专线** | `sk-kilo` | `http://127.0.0.1:8088/kilo/v1` | `nemotron-550b`<br>`nvidia-nemotron-70b` 等免费模型 |
 | **Tencent CodeBuddy** | `sk-tencent` | `http://127.0.0.1:8088/cb/v1` | `deepseek-v4.1`<br>`deepseek-v4`<br>`glm-5.3`<br>`kimi-k3-1`<br>`hy4-preview` 等 18 个 |
 | **Tencent LightVela** | `sk-lightvela` | `http://127.0.0.1:8088/lv/v1` | `deepseek-v4-pro-202606`<br>`auto` 等 |
+| **Today AI 专线** | `sk-todayai` | `http://127.0.0.1:8088/today/v1` | `todayai/default`<br>`deepseek-v4.1-flash`<br>`minimax-m31-flash`<br>`glm-5.3` 等 |
+
 
 ---
 
