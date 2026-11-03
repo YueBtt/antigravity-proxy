@@ -1668,8 +1668,11 @@ DASHBOARD_HTML = r"""<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Antigravity 掌控中心 · Liquid Glass</title>
 <style>
+
 :root {
   --bg: #050507;
+  --bg-gradient-1: rgba(139, 92, 246, 0.15);
+  --bg-gradient-2: rgba(59, 130, 246, 0.08);
   --card-bg: rgba(22, 22, 28, 0.75);
   --card-border: rgba(255, 255, 255, 0.08);
   --accent: #8b5cf6;
@@ -1680,7 +1683,160 @@ DASHBOARD_HTML = r"""<!DOCTYPE html>
   --red: #ef4444;
   --yellow: #f59e0b;
   --blue: #3b82f6;
+  --sidebar-bg: rgba(18, 18, 24, 0.96);
+  --table-hover: rgba(255, 255, 255, 0.02);
+  --input-bg: #0c0c10;
+  --pill-bg: rgba(255, 255, 255, 0.04);
 }
+
+/* 浅色主题模式 (完全覆盖变量并应用到所有文字、卡片、背景与阴影) */
+[data-theme="light"] {
+  --bg: #f1f5f9;
+  --bg-gradient-1: rgba(139, 92, 246, 0.12);
+  --bg-gradient-2: rgba(59, 130, 246, 0.08);
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.1);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --sidebar-bg: #ffffff;
+  --table-hover: rgba(0, 0, 0, 0.03);
+  --input-bg: #f8fafc;
+  --pill-bg: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] html,
+[data-theme="light"] body {
+  background-color: var(--bg) !important;
+  color: var(--text-primary) !important;
+  background-image: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.05) 0%, transparent 40%) !important;
+}
+
+[data-theme="light"] .card {
+  background: var(--card-bg) !important;
+  border-color: var(--card-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .stat-val {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .stat-label,
+[data-theme="light"] .stat-sub {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .sidebar-drawer {
+  background: var(--sidebar-bg) !important;
+  border-right-color: var(--card-border) !important;
+  box-shadow: 10px 0 50px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .sidebar-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sidebar-label {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .sidebar-menu-item {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .table-wrap {
+  background: #ffffff !important;
+  border-color: var(--card-border) !important;
+}
+
+[data-theme="light"] th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] td {
+  color: #1e293b !important;
+  border-top-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .modal-content-box {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme="light"] .modal-content-box button:not(.primary) {
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] #policyModalTitle {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] #policyFileInfo {
+  color: #64748b !important;
+}
+
+[data-theme="light"] #policyContentTextarea {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .channel-pill {
+  background: var(--pill-bg) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .channel-pill.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2)) !important;
+  border-color: #a855f7 !important;
+  color: #7e22ce !important;
+}
+
+/* 浅色模式专属文本、按钮与标题对比度精细强化 (解决图1~图4看不清痛点) */
+[data-theme="light"] .section-header h3 {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .logo-title h1 {
+  background: linear-gradient(90deg, #1e1b4b, #4338ca) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #1e1b4b !important;
+}
+
+[data-theme="light"] button:not(.primary) {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] button:not(.primary):hover,
+[data-theme="light"] button:not(.primary):active {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] #acc-email {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .account-card {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; -webkit-tap-highlight-color: transparent; }
 html, body {
   background-color: var(--bg);
@@ -1876,13 +2032,367 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
   transition: width 0.5s ease;
 }
 
+
+/* === 极客毛玻璃侧边栏 & 宗门专线独立面板 (2026 终极版) === */
+.logo-icon {
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.logo-icon:hover {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.8));
+}
+.logo-icon:active {
+  transform: scale(0.95);
+}
+.logo-icon::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
+  background: #22c55e;
+  border: 1.5px solid #0f0f15;
+  border-radius: 999px;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+/* 侧边栏抽屉与全屏毛玻璃遮罩 */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 82%;
+  max-width: 320px;
+  background: rgba(18, 18, 24, 0.94);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 10px 0 50px rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  padding: 20px 16px;
+}
+.sidebar-drawer.active {
+  display: flex !important;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 16px;
+}
+.sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+.sidebar-close {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #94a3b8;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.sidebar-section {
+  margin-bottom: 20px;
+}
+.sidebar-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 8px;
+  padding-left: 4px;
+  letter-spacing: 0.5px;
+}
+.sidebar-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  color: #e2e8f0;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.sidebar-menu-item:hover, .sidebar-menu-item:active {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: #c084fc;
+}
+.sidebar-menu-item.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(99, 102, 241, 0.25));
+  border-color: rgba(168, 85, 247, 0.5);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* iOS 风格 Switch 开关 */
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+.ios-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.15);
+  transition: 0.3s;
+  border-radius: 22px;
+}
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.ios-switch input:checked + .switch-slider {
+  background-color: #22c55e;
+}
+.ios-switch input:checked + .switch-slider:before {
+  transform: translateX(18px);
+}
+
+/* 宗门专线水平吸附药丸 Tabs */
+.channel-pill-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 4px 14px 4px;
+  margin-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.channel-pill-nav::-webkit-scrollbar {
+  display: none;
+}
+.channel-pill {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.channel-pill.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.35));
+  border-color: rgba(168, 85, 247, 0.6);
+  color: #f1f5f9;
+  box-shadow: 0 4px 16px rgba(147, 51, 234, 0.25);
+}
+.channel-pill:active {
+  transform: scale(0.96);
+}
+
+/* 专线独立面板容器 */
+.channel-panel {
+  display: none;
+}
+.channel-panel.active {
+  display: block !important;
+  opacity: 1 !important;
+}
+
 </style>
 </head>
 <body>
+
+<!-- 全局侧边栏抽屉与毛玻璃遮罩 -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar-drawer" id="sidebarDrawer">
+  <div class="sidebar-header">
+    <div class="sidebar-title">
+      <span style="font-size:18px;">⚡</span>
+      <span>Antigravity 掌门密令</span>
+    </div>
+    <div class="sidebar-close" onclick="closeSidebar()">✕</div>
+  </div>
+
+  <!-- 1. 全局策略与越狱控制台 -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">🎯 全局策略与越狱注入</div>
+    <div class="sidebar-menu-item" style="cursor:default;">
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <span style="font-weight:600; font-size:12.5px;">越狱策略全局拦截</span>
+        <span style="font-size:10.5px; color:#94a3b8;" id="sidebar-policy-status">当前：检查中...</span>
+      </div>
+      <label class="ios-switch">
+        <input type="checkbox" id="policySwitch" onchange="togglePolicySwitch(this.checked)">
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+    <div class="sidebar-menu-item" id="btnOpenPolicyModal" onclick="openPolicyEditorModal()" style="cursor:pointer; -webkit-tap-highlight-color:rgba(168,85,247,0.3);">
+      <div style="display:flex; align-items:center; gap:8px; pointer-events:none;">
+        <span>📝</span>
+        <span>查看/编辑生效策略文件</span>
+      </div>
+      <span style="font-size:12px; color:#a855f7; pointer-events:none;">›</span>
+    </div>
+  </div>
+
+  <!-- 2. 宗门专线快捷切换 -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">🌐 宗门专线快速切换</div>
+    <div class="sidebar-menu-item" onclick="selectChannel('google')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>🌐</span>
+        <span>Google 账号矩阵 (独享)</span>
+      </div>
+      <span style="font-size:11px; color:#22c55e;">在线</span>
+    </div>
+    <div class="sidebar-menu-item" onclick="selectChannel('codebuddy')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>🐧</span>
+        <span>腾讯 CodeBuddy 专线</span>
+      </div>
+      <span style="font-size:11px; color:#38bdf8;">18模型</span>
+    </div>
+    <div class="sidebar-menu-item" onclick="selectChannel('lightvela')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>⛵</span>
+        <span>Tencent LightVela 专线</span>
+      </div>
+      <span style="font-size:11px; color:#818cf8;">沙盒</span>
+    </div>
+    <div class="sidebar-menu-item" onclick="selectChannel('today')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>🐢</span>
+        <span>Today AI (3亿Tokens)</span>
+      </div>
+      <span style="font-size:11px; color:#fbbf24;">Pro</span>
+    </div>
+    <div class="sidebar-menu-item" onclick="selectChannel('ez')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>🪙</span>
+        <span>EZCompleteUI 轮询池</span>
+      </div>
+      <span style="font-size:11px; color:#34d399;">生图</span>
+    </div>
+    <div class="sidebar-menu-item" onclick="selectChannel('all')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>📜</span>
+        <span>全部专线平铺浏览</span>
+      </div>
+      <span style="font-size:11px; color:#a855f7;">ALL</span>
+    </div>
+  </div>
+
+  <!-- 3. 极客运维工具箱 -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">🧰 极客运维百宝箱</div>
+    <div class="sidebar-menu-item" onclick="copyMinisConfig('antigravity')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>📋</span>
+        <span>复制 Google 专线接入配置</span>
+      </div>
+    </div>
+    <div class="sidebar-menu-item" onclick="copyMinisConfig('cb')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>📋</span>
+        <span>复制 CodeBuddy 接入配置</span>
+      </div>
+    </div>
+    <div class="sidebar-menu-item" onclick="copyMinisConfig('today')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>📋</span>
+        <span>复制 Today AI 接入配置</span>
+      </div>
+    </div>
+    <div class="sidebar-menu-item" onclick="refreshData(); closeSidebar();">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>🔄</span>
+        <span>一键巡检刷新全部余额</span>
+      </div>
+    </div>
+    <div class="sidebar-menu-item" onclick="gracefulRestartService()" style="color:#f87171;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>⚡</span>
+        <span>平滑优雅重载反代服务</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 外观模式切换 (系统自适应 / 深色 / 浅色) 移动至侧边栏最底部 -->
+  <div class="sidebar-section" style="margin-top:auto; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+    <div class="sidebar-label">🎨 系统外观模式</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:4px;">
+      <button type="button" id="theme-btn-auto" onclick="setThemeMode('auto')" style="justify-content:center; padding:8px 0; font-size:11.5px; border-radius:8px;">📱 自动</button>
+      <button type="button" id="theme-btn-dark" onclick="setThemeMode('dark')" style="justify-content:center; padding:8px 0; font-size:11.5px; border-radius:8px;">🌙 深色</button>
+      <button type="button" id="theme-btn-light" onclick="setThemeMode('light')" style="justify-content:center; padding:8px 0; font-size:11.5px; border-radius:8px;">☀️ 浅色</button>
+    </div>
+  </div>
+</div>
+
 <div class="container">
   <header>
     <div class="logo-wrap">
-      <div class="logo-icon">⚡</div>
+      <div class="logo-icon" onclick="openSidebar()" title="点击呼出掌门侧边栏密令">⚡</div>
       <div class="logo-title">
         <h1>Antigravity 掌控中心</h1>
         <p>iOS Native Liquid Glass Engine</p>
@@ -1994,7 +2504,18 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </div>
   </div>
 
-  <div class="account-card">
+  <!-- 宗门专线快捷药丸导航栏 (Pill Tabs) -->
+  <div class="channel-pill-nav" id="channelPillNav">
+    <div class="channel-pill active" onclick="selectChannel('google')" id="pill-google">🌐 Google 矩阵</div>
+    <div class="channel-pill" onclick="selectChannel('codebuddy')" id="pill-codebuddy">🐧 CodeBuddy</div>
+    <div class="channel-pill" onclick="selectChannel('lightvela')" id="pill-lightvela">⛵ LightVela</div>
+    <div class="channel-pill" onclick="selectChannel('today')" id="pill-today">🐢 Today AI</div>
+    <div class="channel-pill" onclick="selectChannel('ez')" id="pill-ez">🪙 EZComplete</div>
+    <div class="channel-pill" onclick="selectChannel('all')" id="pill-all">📜 平铺展示</div>
+  </div>
+
+<div class="channel-panel active" id="panel-google">
+  <div class="account-card" style="margin-top:4px;">
     <div class="account-info">
       <div class="account-avatar">G</div>
       <div>
@@ -2025,7 +2546,7 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </div>
   </div>
 
-  <div class="table-wrap" id="google-table-wrap" style="display:none; transition: all 0.3s ease;">
+  <div class="table-wrap" id="google-table-wrap" style="display:block; transition: all 0.3s ease;">
     <table>
       <thead>
         <tr>
@@ -2042,6 +2563,9 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </table>
   </div>
 
+  </div>
+
+  <div class="channel-panel" id="panel-codebuddy">
   <!-- 第五任长老：腾讯 CodeBuddy 专属独立账号矩阵卡片 (物理彻底隔离) -->
   <div class="section-header" style="margin-top:24px;">
     <div style="display:flex; align-items:center; gap:8px;">
@@ -2055,7 +2579,7 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </div>
   </div>
 
-  <div class="table-wrap" id="cb-table-wrap" style="display:none; transition: all 0.3s ease;">
+  <div class="table-wrap" id="cb-table-wrap" style="display:block; transition: all 0.3s ease;">
     <table>
       <thead>
         <tr>
@@ -2073,6 +2597,9 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </table>
   </div>
 
+  </div>
+
+  <div class="channel-panel" id="panel-lightvela">
   <!-- 第六任长老：Tencent LightVela 专属独立资产卡片 (物理彻底隔离) -->
   <div class="section-header" style="margin-top:24px;">
     <div style="display:flex; align-items:center; gap:8px;">
@@ -2086,10 +2613,13 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </div>
   </div>
 
-  <div id="lv-table-wrap" style="display:none; margin-top:12px; transition: all 0.3s ease;">
+  <div id="lv-table-wrap" style="display:block; margin-top:12px; transition: all 0.3s ease;">
     <div id="lv-accounts-container"></div>
   </div>
 
+  </div>
+
+  <div class="channel-panel" id="panel-today">
   <!-- Today AI 专属独立账号矩阵卡片 (第七任长老归位，物理彻底隔离) -->
   <div class="section-header" style="margin-top:24px;">
     <div style="display:flex; align-items:center; gap:8px;">
@@ -2103,7 +2633,7 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </div>
   </div>
 
-  <div class="table-wrap" id="today-table-wrap" style="display:none; transition: all 0.3s ease;">
+  <div class="table-wrap" id="today-table-wrap" style="display:block; transition: all 0.3s ease;">
     <table>
       <thead>
         <tr>
@@ -2122,6 +2652,9 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </table>
   </div>
 
+  </div>
+
+  <div class="channel-panel" id="panel-ez">
   <!-- EZCompleteUI 专属独立账号矩阵卡片 (物理隔离，彻底分开展示) -->
   <div class="section-header" style="margin-top:24px;">
     <div style="display:flex; align-items:center; gap:8px;">
@@ -2135,7 +2668,7 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     </div>
   </div>
 
-  <div class="table-wrap" id="ez-table-wrap" style="display:none; transition: all 0.3s ease;">
+  <div class="table-wrap" id="ez-table-wrap" style="display:block; transition: all 0.3s ease;">
     <table>
       <thead>
         <tr>
@@ -2150,6 +2683,8 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
       <tbody id="ez-accounts-tbody">
       </tbody>
     </table>
+  </div>
+
   </div>
 
   <div class="section-header" style="margin-top:20px;">
@@ -2266,6 +2801,38 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
   </div>
 </div>
 
+
+<!-- 全功能策略文件查看与热编辑弹窗 (Policy Editor Modal) -->
+<div id="policyEditorModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); align-items:center; justify-content:center; z-index:999999;">
+  <div class="modal-content-box" style="width:92%; max-width:540px; max-height:85vh; background:#16161d; border:1px solid rgba(168,85,247,0.35); border-radius:20px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.9); display:flex; flex-direction:column; box-sizing:border-box;">
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">📝</span>
+        <h3 style="font-size:15px; font-weight:700; color:#fff;" id="policyModalTitle">生效策略文件 (热编辑)</h3>
+      </div>
+      <button type="button" onclick="closePolicyEditorModal()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:8px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:14px; cursor:pointer;">✕</button>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:11.5px; color:#94a3b8;">
+      <span id="policyFileInfo">正在读取策略文件...</span>
+      <button type="button" onclick="loadPolicyContent()" style="padding:4px 10px; font-size:11px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#c4b5fd;">🔄 刷新正文</button>
+    </div>
+
+    <!-- 策略内容大文本编辑框 -->
+    <textarea id="policyContentTextarea" spellcheck="false" style="width:100%; flex:1; min-height:300px; max-height:50vh; background:#0c0c10; border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#f1f5f9; padding:12px; font-family:Menlo, Monaco, Consolas, monospace; font-size:11.5px; line-height:1.5; resize:none; outline:none; box-sizing:border-box;"></textarea>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+      <span style="font-size:11px; color:#94a3b8;" id="policySaveStatus">修改后保存自动触发热加载</span>
+      <div style="display:flex; gap:8px;">
+        <button type="button" onclick="closePolicyEditorModal()" style="padding:8px 16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:9px; font-weight:600; cursor:pointer;">取消</button>
+        <button type="button" class="primary" onclick="savePolicyContent()" id="btnSavePolicy" style="background:linear-gradient(135deg, #a855f7, #6366f1); border:none; padding:8px 18px; color:#fff; border-radius:9px; font-weight:700; box-shadow:0 4px 15px rgba(168,85,247,0.4); cursor:pointer;">💾 保存并热生效</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- OAuth 授权弹窗 -->
 <div id="oauthModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); align-items:center; justify-content:center; z-index:999;">
   <div style="width:90%; max-width:440px; background:#16161d; border:1px solid rgba(255,255,255,0.12); border-radius:20px; padding:24px; box-shadow:0 20px 60px rgba(0,0,0,0.8);">
@@ -2285,6 +2852,258 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
 </div>
 
 <script>
+
+
+// === 外观模式驱动 (跟随系统 / 浅色 / 深色) ===
+let currentTheme = localStorage.getItem('ag_theme_mode') || 'auto';
+
+function setThemeMode(mode) {
+  currentTheme = mode;
+  localStorage.setItem('ag_theme_mode', mode);
+  applyTheme();
+}
+
+function applyTheme() {
+  const root = document.documentElement;
+  const isDarkSys = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  if (currentTheme === 'dark') {
+    root.setAttribute('data-theme', 'dark');
+  } else if (currentTheme === 'light') {
+    root.setAttribute('data-theme', 'light');
+  } else {
+    // 自动跟随系统
+    root.removeAttribute('data-theme');
+  }
+
+  // 更新侧边栏按钮高亮状态
+  ['auto', 'dark', 'light'].forEach(m => {
+    const btn = document.getElementById('theme-btn-' + m);
+    if (btn) {
+      if (m === currentTheme) {
+        btn.style.background = 'linear-gradient(135deg, #a855f7, #6366f1)';
+        btn.style.borderColor = 'transparent';
+        btn.style.color = '#fff';
+      } else {
+        btn.style.background = 'rgba(255, 255, 255, 0.05)';
+        btn.style.borderColor = 'var(--card-border)';
+        btn.style.color = 'var(--text-secondary)';
+      }
+    }
+  });
+}
+
+// 监听系统深色/浅色模式切换
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (currentTheme === 'auto') applyTheme();
+  });
+}
+
+// === 策略查看/热编辑浮窗逻辑 ===
+function openPolicyEditorModal() {
+  closeSidebar();
+  const modal = document.getElementById('policyEditorModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.style.zIndex = '999999';
+  }
+  loadPolicyContent();
+}
+
+function closePolicyEditorModal() {
+  const modal = document.getElementById('policyEditorModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function loadPolicyContent() {
+  const info = document.getElementById('policyFileInfo');
+  const txt = document.getElementById('policyContentTextarea');
+  info.innerText = '正在从真机加载策略文件...';
+  fetch('/api/policy_content')
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        info.innerText = `文件: ${d.file} (${d.size} 字节)`;
+        txt.value = d.content;
+        document.getElementById('policySaveStatus').innerText = '就绪 (保存即热加载)';
+      } else {
+        info.innerText = '加载失败: ' + (d.msg || '未知错误');
+      }
+    })
+    .catch(e => {
+      info.innerText = '网络请求失败';
+    });
+}
+
+function savePolicyContent() {
+  const btn = document.getElementById('btnSavePolicy');
+  const status = document.getElementById('policySaveStatus');
+  const txt = document.getElementById('policyContentTextarea');
+  btn.disabled = true;
+  status.innerText = '正在原子写入真机...';
+  fetch('/api/policy_save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({content: txt.value})
+  })
+  .then(r => r.json())
+  .then(d => {
+    btn.disabled = false;
+    if (d.ok) {
+      status.innerText = `✅ 保存成功 (${d.size} 字节，指纹已更新)`;
+      status.style.color = '#22c55e';
+      setTimeout(() => {
+        closePolicyEditorModal();
+      }, 1000);
+    } else {
+      status.innerText = '保存失败: ' + d.msg;
+      status.style.color = '#f87171';
+    }
+  })
+  .catch(e => {
+    btn.disabled = false;
+    status.innerText = '保存异常: ' + e;
+  });
+}
+
+// 初始化应用外观模式
+applyTheme();
+
+// === 侧边栏与宗门专线独立面板交互驱动 (全动态实时驱动) ===
+function openSidebar() {
+  const ov = document.getElementById('sidebarOverlay');
+  const dr = document.getElementById('sidebarDrawer');
+  if (ov) {
+    ov.classList.add('active');
+    ov.style.display = 'block';
+  }
+  if (dr) {
+    dr.classList.add('active');
+  }
+  fetchPolicyState();
+}
+
+function closeSidebar() {
+  const ov = document.getElementById('sidebarOverlay');
+  const dr = document.getElementById('sidebarDrawer');
+  if (ov) {
+    ov.classList.remove('active');
+    ov.style.display = 'none';
+  }
+  if (dr) {
+    dr.classList.remove('active');
+  }
+}
+
+// 专线面板切换 (独享视图 vs 平铺视图)
+let currentChannel = localStorage.getItem('ag_active_channel') || 'google';
+
+function selectChannel(ch) {
+  currentChannel = ch;
+  localStorage.setItem('ag_active_channel', ch);
+  
+  // 更新药丸高亮
+  document.querySelectorAll('.channel-pill').forEach(p => p.classList.remove('active'));
+  const activePill = document.getElementById('pill-' + ch);
+  if (activePill) activePill.classList.add('active');
+
+  // 控制面板显示
+  const panels = ['google', 'codebuddy', 'lightvela', 'today', 'ez'];
+  if (ch === 'all') {
+    panels.forEach(p => {
+      const el = document.getElementById('panel-' + p);
+      if (el) el.classList.add('active');
+    });
+  } else {
+    panels.forEach(p => {
+      const el = document.getElementById('panel-' + p);
+      if (el) {
+        if (p === ch) el.classList.add('active');
+        else el.classList.remove('active');
+      }
+    });
+  }
+  closeSidebar();
+}
+
+// 页面初始化时恢复上次选择的专线
+window.addEventListener('DOMContentLoaded', () => {
+  selectChannel(currentChannel);
+  fetchPolicyState();
+});
+
+// 动态策略查询与开关
+function fetchPolicyState() {
+  fetch('/api/policy_state')
+    .then(r => r.json())
+    .then(d => {
+      const sw = document.getElementById('policySwitch');
+      const st = document.getElementById('sidebar-policy-status');
+      if (sw && st) {
+        sw.checked = d.enabled;
+        st.innerText = d.enabled ? `已生效 (${d.file} / ${d.size}B)` : '未启用 / 策略已关闭';
+        st.style.color = d.enabled ? '#22c55e' : '#94a3b8';
+      }
+    })
+    .catch(() => {});
+}
+
+function togglePolicySwitch(checked) {
+  fetch('/api/policy_toggle', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({enabled: checked})
+  })
+  .then(r => r.json())
+  .then(d => {
+    fetchPolicyState();
+  });
+}
+
+// 一键复制客户端接入配置
+function copyMinisConfig(kind) {
+  let url = '', key = '', label = '';
+  const host = window.location.origin;
+  if (kind === 'antigravity') {
+    url = host + '/v1';
+    key = 'sk-antigravity';
+    label = 'Google Antigravity 专线';
+  } else if (kind === 'cb') {
+    url = host + '/cb/v1';
+    key = 'sk-tencent';
+    label = '腾讯 CodeBuddy 专线';
+  } else if (kind === 'today') {
+    url = host + '/today/v1';
+    key = 'sk-todayai';
+    label = 'Today AI 专线';
+  }
+  const text = `服务商: ${label}
+Base URL: ${url}
+API Key: ${key}`;
+  navigator.clipboard.writeText(text).then(() => {
+    alert(`✅ 已复制 ${label} 配置到剪贴板！
+
+${text}`);
+  }).catch(() => {
+    prompt('请长按复制配置:', text);
+  });
+}
+
+// 平滑优雅重启服务
+function gracefulRestartService() {
+  if (!confirm('确定要平滑重载 8088 反代服务吗？\n看门狗将在 3 秒内秒级无感拉起最新状态。')) return;
+  fetch('/api/service_restart', {method: 'POST'})
+    .then(() => {
+      alert('已触发重载信号，页面将在 2 秒后自动刷新...');
+      setTimeout(() => window.location.reload(), 2000);
+    })
+    .catch(() => {
+      setTimeout(() => window.location.reload(), 2000);
+    });
+}
+
+
 
 function formatCountdown(resetTimeStr) {
   if (!resetTimeStr) return '';
@@ -3974,6 +4793,60 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.wfile.write(content)
                 return
 
+        if path == "/api/policy_content":
+            policy_map_p = os.path.join(PROXY_DIR, "model_policy_map.json")
+            target_f = "model_policy/deepseek-v4-1.md"
+            if os.path.exists(policy_map_p):
+                try:
+                    with open(policy_map_p, "r", encoding="utf-8") as pf:
+                        pm = json.load(pf)
+                    if pm:
+                        target_f = list(pm.values())[0]
+                except Exception:
+                    pass
+            real_p = target_f if os.path.isabs(target_f) else os.path.join(PROXY_DIR, target_f)
+            content = ""
+            if os.path.exists(real_p):
+                try:
+                    with open(real_p, "r", encoding="utf-8") as f:
+                        content = f.read()
+                except Exception as e:
+                    content = f"# 读取异常: {e}"
+            res_b = json.dumps({"ok": True, "file": os.path.basename(real_p), "path": target_f, "size": len(content.encode("utf-8")), "content": content}, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(res_b)))
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(res_b)
+            return
+
+        if path == "/api/policy_state":
+            policy_map_p = os.path.join(PROXY_DIR, "model_policy_map.json")
+            enabled = False
+            cur_file = "无"
+            f_size = 0
+            if os.path.exists(policy_map_p):
+                try:
+                    with open(policy_map_p, "r", encoding="utf-8") as pf:
+                        pm = json.load(pf)
+                    if pm and len(pm) > 0:
+                        enabled = True
+                        cur_file = list(pm.values())[0]
+                        real_p = cur_file if os.path.isabs(cur_file) else os.path.join(PROXY_DIR, cur_file)
+                        if os.path.exists(real_p):
+                            f_size = os.path.getsize(real_p)
+                except Exception:
+                    pass
+            res_b = json.dumps({"enabled": enabled, "file": os.path.basename(cur_file), "size": f_size}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(res_b)))
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(res_b)
+            return
+
         if path == "/api/stats":
             data = json.dumps(get_stats_summary(), ensure_ascii=False).encode("utf-8")
             self.send_response(200)
@@ -4575,6 +5448,86 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             except Exception:
                 pass
             self.handle_ezcomplete_chat(body)
+            return
+
+        if path == "/api/policy_save":
+            try:
+                req_d = json.loads(body.decode("utf-8"))
+                new_content = req_d.get("content", "")
+                policy_map_p = os.path.join(PROXY_DIR, "model_policy_map.json")
+                target_f = "model_policy/deepseek-v4-1.md"
+                if os.path.exists(policy_map_p):
+                    try:
+                        with open(policy_map_p, "r", encoding="utf-8") as pf:
+                            pm = json.load(pf)
+                        if pm:
+                            target_f = list(pm.values())[0]
+                    except Exception:
+                        pass
+                real_p = target_f if os.path.isabs(target_f) else os.path.join(PROXY_DIR, target_f)
+                os.makedirs(os.path.dirname(real_p), exist_ok=True)
+                with open(real_p, "w", encoding="utf-8") as wf:
+                    wf.write(new_content)
+                res_b = json.dumps({"ok": True, "size": len(new_content.encode("utf-8")), "file": os.path.basename(real_p)}).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(res_b)))
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(res_b)
+                return
+            except Exception as e:
+                res_b = json.dumps({"ok": False, "msg": str(e)}).encode("utf-8")
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(res_b)))
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(res_b)
+                return
+
+        if path == "/api/policy_toggle":
+            try:
+                req_d = json.loads(body.decode("utf-8"))
+                target_state = req_d.get("enabled", True)
+                policy_map_p = os.path.join(PROXY_DIR, "model_policy_map.json")
+                if target_state:
+                    default_map = {
+                        "deepseek-v4.1-flash": "model_policy/deepseek-v4-1.md",
+                        "deepseek-v4-1-flash": "model_policy/deepseek-v4-1.md",
+                        "deepseek-v4.1-flash-high": "model_policy/deepseek-v4-1.md",
+                        "*": "model_policy/deepseek-v4-1.md"
+                    }
+                    with open(policy_map_p, "w", encoding="utf-8") as wf:
+                        json.dump(default_map, wf, indent=2, ensure_ascii=False)
+                else:
+                    if os.path.exists(policy_map_p):
+                        os.remove(policy_map_p)
+                res_b = json.dumps({"ok": True, "enabled": target_state}).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(res_b)))
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(res_b)
+                return
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                return
+
+        if path == "/api/service_restart":
+            res_b = json.dumps({"ok": True, "msg": "restarting"}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(res_b)))
+            self.send_cors()
+            self.end_headers()
+            self.wfile.write(res_b)
+            def _delayed_restart():
+                time.sleep(0.5)
+                os.kill(os.getpid(), signal.SIGTERM)
+            threading.Thread(target=_delayed_restart, daemon=True).start()
             return
 
         if path == "/api/switch_account":
@@ -6529,7 +7482,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     # ★ 防空响应：若一个字都没吐出来（正文和工具调用都没有），
                     #   按上游真实 finishReason 给出准确提示，杜绝客户端拿到空响应后无限重试。
                     if not has_tool_call and not _any_text_sent:
-                        if _finish_reason == "SAFETY":
+                        if _finish_reason == "MALFORMED_FUNCTION_CALL":
+                            # 🛡️ 发生 MALFORMED_FUNCTION_CALL 时，智能引导客户端平滑自愈，避免恐慌
+                            _hint = ("\n\n⚙️ 正在重新优化参数上下文并继续执行...")
+                        elif _finish_reason == "SAFETY":
                             _hint = ("\n\n🚫 本次请求被上游 Gemini 安全过滤器拦截（finishReason=SAFETY）。"
                                      "这不是思考预算问题，重试同样会被拦。请调整措辞后重新发送。")
                         elif _finish_reason == "MAX_TOKENS":
@@ -6667,8 +7623,15 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     if tool_calls:
                         msg_obj["tool_calls"] = tool_calls
 
-                    total_comp = comp_tokens + thoughts_tokens
+                    # 如果正文和工具全为空，且为 MALFORMED 异常，兜底一条继续执行引导
                     _nfr = str((candidates[0].get("finishReason") if candidates else "") or "")
+                    if not tool_calls and not content_text:
+                        if _nfr == "MALFORMED_FUNCTION_CALL":
+                            msg_obj["content"] = "正在继续执行..."
+                        elif _nfr == "SAFETY":
+                            msg_obj["content"] = "本次请求被上游 Gemini 安全过滤器拦截（finishReason=SAFETY）。"
+
+                    total_comp = comp_tokens + thoughts_tokens
                     if tool_calls:
                         _f_ns = "tool_calls"
                     elif _nfr == "SAFETY":
