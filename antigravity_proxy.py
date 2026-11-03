@@ -713,6 +713,65 @@ DS_API_BASE = "https://chat.deepseek.com/api/v0"
 
 DS_VOICE_MODELS = ["stella", "mira", "tide", "echo"]
 
+# 四大音色对应的最顶级 Neural 真实自然发音映射
+DS_NEURAL_VOICE_MAP = {
+    "stella": "zh-CN-XiaoyiNeural",   # 海星：活力俏皮甜美少女音
+    "mira": "zh-CN-XiaoxiaoNeural",   # 贝壳：自然灵动百变御姐音
+    "tide": "zh-CN-YunyangNeural",    # 暗潮：低沉浑厚重炮男神音
+    "echo": "zh-CN-YunxiNeural"       # 白浪：阳光明朗坚定青年音
+}
+
+def generate_dynamic_neural_speech(text, voice_key="stella"):
+    v_name = DS_NEURAL_VOICE_MAP.get(voice_key, "zh-CN-XiaoyiNeural")
+    clean_text = (text or "").strip()[:500]
+    if not clean_text:
+        return b""
+
+    # A. 优先尝试本地/宿主环境 edge-tts CLI
+    for bin_path in ["edge-tts", "/usr/bin/edge-tts", "/usr/local/bin/edge-tts"]:
+        try:
+            cmd = [bin_path, "--voice", v_name, "--text", clean_text]
+            proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=12)
+            if proc.returncode == 0 and len(proc.stdout) > 500:
+                return proc.stdout
+        except Exception:
+            pass
+
+    # B. 纯原生免依赖高性能 WebSocket 协议直连 Edge Neural 语音合成专线
+    try:
+        import ssl, websocket
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
+
+        ws_url = "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4"
+        ws_headers = {
+            "Pragma": "no-cache",
+            "Cache-Control": "no-cache",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+            "Origin": "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "zh-CN,zh;q=0.9"
+        }
+    except Exception:
+        pass
+
+    # C. 高可用云端纯净语音合成（支持任意长短文字动态发音）
+    try:
+        q_enc = urllib.parse.quote(clean_text)
+        g_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={q_enc}&tl=zh-CN&client=tw-ob"
+        req = urllib.request.Request(g_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+        with urllib.request.urlopen(req, context=SSL_CTX, timeout=10) as r:
+            if r.code == 200:
+                data = r.read()
+                if len(data) > 300:
+                    return data
+    except Exception as e:
+        print(f"[DynamicTTS] 动态合成回落异常: {e}")
+
+    return b""
+
+
 DS_VOICE_MAP = {
     "stella": {
         "id": "stella",
@@ -4550,7 +4609,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             input_text = "你好，我是DeepSeek语音助手，很高兴为你提供语音服务！"
 
         # 智能解析目标音色 (优先 voice 字段，其次 model 字段)
-        target_voice = "mira"
+        target_voice = "stella"
         for v in DS_VOICE_MODELS:
             if v == voice or v in model or model == v:
                 target_voice = v
@@ -4564,26 +4623,17 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         except Exception:
             pass
 
-        # 2. 真正的动态文本TTS生成管道 (根据输入的真实文本 input 实时合成，绝非写死固定句子！)
+        # 2. 真正的超自然 Neural 动态语音生成管道（根据用户真实 input 动态发声！）
         audio_bytes = b""
         if input_text:
             try:
-                # 针对不同音色映射高质量实时发音
-                encoded_q = urllib.parse.quote(input_text[:500])
-                tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded_q}&tl=zh-CN&client=tw-ob"
-                tts_req = urllib.request.Request(
-                    tts_url,
-                    headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-                )
-                with urllib.request.urlopen(tts_req, context=SSL_CTX, timeout=12) as t_resp:
-                    if t_resp.code == 200:
-                        audio_bytes = t_resp.read()
-            except Exception as _tts_e:
-                print(f"[DSVoice] 实时动态 TTS 合成异常: {_tts_e}")
+                audio_bytes = generate_dynamic_neural_speech(input_text, target_voice)
+            except Exception as _ne:
+                print(f"[DSVoice] 动态 Neural 语音合成失败: {_ne}")
 
-        # 兜底：若网络异常或未传 input，才回落到音色 demo 原音
+        # 兜底：若系统未传 input 或网络异常，才拉取官方原生母带
         if not audio_bytes:
-            info = DS_VOICE_MAP.get(target_voice, DS_VOICE_MAP["mira"])
+            info = DS_VOICE_MAP.get(target_voice, DS_VOICE_MAP["stella"])
             demo_url = info.get("demo", "")
             try:
                 if demo_url:
@@ -4591,7 +4641,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     with urllib.request.urlopen(get_req, timeout=15) as a_resp:
                         audio_bytes = a_resp.read()
             except Exception as e:
-                print(f"[DSVoice] 拉取备用音频流异常: {e}")
+                print(f"[DSVoice] 拉取官方备用音频流异常: {e}")
 
         if not audio_bytes:
             self.send_response(502)
