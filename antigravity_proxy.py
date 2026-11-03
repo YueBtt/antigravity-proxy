@@ -4529,6 +4529,26 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         voice = (req_data.get("voice") or "").strip().lower()
         input_text = (req_data.get("input", "") or "").strip()
 
+        # 兼容客户端传 messages 结构（如快捷测试）
+        if not input_text and req_data.get("messages"):
+            msgs = req_data.get("messages", [])
+            for m in reversed(msgs):
+                if m.get("content"):
+                    c = m.get("content")
+                    if isinstance(c, str):
+                        input_text = c.strip()
+                        break
+                    elif isinstance(c, list):
+                        for p in c:
+                            if isinstance(p, dict) and p.get("text"):
+                                input_text = p.get("text").strip()
+                                break
+                        if input_text:
+                            break
+
+        if not input_text:
+            input_text = "你好，我是DeepSeek语音助手，很高兴为你提供语音服务！"
+
         # 智能解析目标音色 (优先 voice 字段，其次 model 字段)
         target_voice = "mira"
         for v in DS_VOICE_MODELS:
@@ -6234,7 +6254,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"error": {"message": str(e)}}, ensure_ascii=False).encode("utf-8"))
                 return
         # === 通道九：OpenAI 标准语音端点 /v1/audio/speech ===
-        if path in ["/v1/audio/speech", "/audio/speech", "/ds-voice/v1/audio/speech", "/dsvoice/v1/audio/speech"]:
+        if path.endswith("/audio/speech") or path in ["/v1/audio/speech", "/audio/speech", "/ds-voice/v1/audio/speech", "/dsvoice/v1/audio/speech"]:
             self.handle_dsvoice_speech(body)
             return
 
