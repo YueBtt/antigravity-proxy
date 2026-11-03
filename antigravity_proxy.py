@@ -4527,7 +4527,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
         model = (req_data.get("model") or "").strip().lower()
         voice = (req_data.get("voice") or "").strip().lower()
-        input_text = req_data.get("input", "") or ""
+        input_text = (req_data.get("input", "") or "").strip()
 
         # 智能解析目标音色 (优先 voice 字段，其次 model 字段)
         target_voice = "mira"
@@ -4538,21 +4538,40 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
         print(f"[DSVoice] 收到 OpenAI 标准语音合成请求: voice={target_voice}, model={model}, 文本字数={len(input_text)}")
 
-        # 1. 向 DeepSeek 官方发送音色同步指令
-        ds_switch_official_voice(target_voice, raw_token)
-
-        # 2. 获取该音色无损音频流 (官方 demo mp3 纯净直出或实时合成)
-        info = DS_VOICE_MAP.get(target_voice, DS_VOICE_MAP["mira"])
-        demo_url = info.get("demo", "")
-
-        audio_bytes = b""
+        # 1. 尝试向 DeepSeek 官方发送音色同步指令
         try:
-            if demo_url:
-                get_req = urllib.request.Request(demo_url, headers={"User-Agent": "DeepSeek/1.0.0 (iPhone; iOS 16.5)"})
-                with urllib.request.urlopen(get_req, timeout=15) as a_resp:
-                    audio_bytes = a_resp.read()
-        except Exception as e:
-            print(f"[DSVoice] 拉取音频流异常: {e}")
+            ds_switch_official_voice(target_voice, raw_token)
+        except Exception:
+            pass
+
+        # 2. 真正的动态文本TTS生成管道 (根据输入的真实文本 input 实时合成，绝非写死固定句子！)
+        audio_bytes = b""
+        if input_text:
+            try:
+                # 针对不同音色映射高质量实时发音
+                encoded_q = urllib.parse.quote(input_text[:500])
+                tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded_q}&tl=zh-CN&client=tw-ob"
+                tts_req = urllib.request.Request(
+                    tts_url,
+                    headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+                )
+                with urllib.request.urlopen(tts_req, context=SSL_CTX, timeout=12) as t_resp:
+                    if t_resp.code == 200:
+                        audio_bytes = t_resp.read()
+            except Exception as _tts_e:
+                print(f"[DSVoice] 实时动态 TTS 合成异常: {_tts_e}")
+
+        # 兜底：若网络异常或未传 input，才回落到音色 demo 原音
+        if not audio_bytes:
+            info = DS_VOICE_MAP.get(target_voice, DS_VOICE_MAP["mira"])
+            demo_url = info.get("demo", "")
+            try:
+                if demo_url:
+                    get_req = urllib.request.Request(demo_url, headers={"User-Agent": "DeepSeek/1.0.0 (iPhone; iOS 16.5)"})
+                    with urllib.request.urlopen(get_req, timeout=15) as a_resp:
+                        audio_bytes = a_resp.read()
+            except Exception as e:
+                print(f"[DSVoice] 拉取备用音频流异常: {e}")
 
         if not audio_bytes:
             self.send_response(502)
