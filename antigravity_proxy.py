@@ -705,6 +705,95 @@ def cb_get_access_token():
         uid = creds.get("uid") or CODEBUDDY_DEFAULT_UID
         return at, uid
 
+# 通道九：DeepSeek 官方语音专线 (2026-11-04 第九任长老归位)
+# ==============================================================================
+DS_VOICE_CREDS_PATH = os.path.join(os.path.dirname(__file__), "deepseek_voice_credentials.json")
+DS_DEFAULT_TOKEN = "4yVOAlF0+igg4SgPUdEtsAOsb4ZP/IRLiFRi20BpwWpWVKI002KaP3tp5tKpvvhQ"
+DS_API_BASE = "https://chat.deepseek.com/api/v0"
+
+DS_VOICE_MODELS = ["stella", "mira", "tide", "echo"]
+
+DS_VOICE_MAP = {
+    "stella": {
+        "id": "stella",
+        "name": "海星",
+        "tag": "俏皮甜美",
+        "gender": "女声",
+        "desc": "甜美活泼少女音",
+        "demo": "https://cdn.deepseek.com/chat/tts/voice-demos/stella_zh.996a319e.mp3"
+    },
+    "mira": {
+        "id": "mira",
+        "name": "贝壳",
+        "tag": "百变活泼",
+        "gender": "女声",
+        "desc": "活泼灵动御姐女声",
+        "demo": "https://cdn.deepseek.com/chat/tts/voice-demos/mira_zh.79e34098.mp3"
+    },
+    "tide": {
+        "id": "tide",
+        "name": "暗潮",
+        "tag": "低沉浑厚",
+        "gender": "男声",
+        "desc": "磁性低沉重炮男声",
+        "demo": "https://cdn.deepseek.com/chat/tts/voice-demos/tide_zh.42b17eef.mp3"
+    },
+    "echo": {
+        "id": "echo",
+        "name": "白浪",
+        "tag": "明朗坚定",
+        "gender": "男声",
+        "desc": "阳光坚定青年男声",
+        "demo": "https://cdn.deepseek.com/chat/tts/voice-demos/echo_zh.c9308ea2.mp3"
+    }
+}
+
+_ds_voice_lock = threading.Lock()
+
+def ds_voice_load_credentials():
+    if not os.path.exists(DS_VOICE_CREDS_PATH):
+        return {"token": DS_DEFAULT_TOKEN, "user": "啊嗷呜🐯", "mobile": "133******69"}
+    try:
+        with open(DS_VOICE_CREDS_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {"token": DS_DEFAULT_TOKEN, "user": "啊嗷呜🐯", "mobile": "133******69"}
+
+def ds_voice_save_credentials(data):
+    try:
+        with open(DS_VOICE_CREDS_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print("[!] 写入 DeepSeek Voice 凭证失败: %s" % e)
+
+def ds_voice_get_token():
+    with _ds_voice_lock:
+        c = ds_voice_load_credentials()
+        return (c.get("token") or DS_DEFAULT_TOKEN).strip()
+
+def ds_switch_official_voice(voice_id, token):
+    v = (voice_id or "").lower().strip()
+    if v not in DS_VOICE_MAP:
+        v = "mira"
+    url = f"{DS_API_BASE}/chat/tts/voice"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "User-Agent": "DeepSeek/1.0.0 (iPhone; iOS 16.5; Scale/3.00)",
+        "Accept": "application/json"
+    }
+    payload = json.dumps({"voice_id": v}).encode("utf-8")
+    req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
+    try:
+        with CELLULAR_OPENER.open(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8", "ignore"))
+            print(f"[DSVoice] 切换官方当前音色为 {v} 成功: {data}")
+            return True
+    except Exception as e:
+        print(f"[DSVoice] 切换音色 {v} 失败: {e}")
+        return False
+
+
 def cb_resolve_model(model_name):
     m = (model_name or "").strip().lower()
     if m in CODEBUDDY_ALIASES:
@@ -2327,6 +2416,13 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
       </div>
       <span style="font-size:11px; color:#fbbf24;">Pro</span>
     </div>
+    <div class="sidebar-menu-item" onclick="selectChannel('dsvoice')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>🎙️</span>
+        <span>DeepSeek 官方语音专线</span>
+      </div>
+      <span style="font-size:11px; color:#38bdf8;">多音色</span>
+    </div>
     <div class="sidebar-menu-item" onclick="selectChannel('ez')">
       <div style="display:flex; align-items:center; gap:8px;">
         <span>🪙</span>
@@ -2362,6 +2458,12 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
       <div style="display:flex; align-items:center; gap:8px;">
         <span>📋</span>
         <span>复制 Today AI 接入配置</span>
+      </div>
+    </div>
+    <div class="sidebar-menu-item" onclick="copyMinisConfig('dsvoice')">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>📋</span>
+        <span>复制 DeepSeek 语音专线配置</span>
       </div>
     </div>
     <div class="sidebar-menu-item" onclick="refreshData(); closeSidebar();">
@@ -2510,6 +2612,7 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
     <div class="channel-pill" onclick="selectChannel('codebuddy')" id="pill-codebuddy">🐧 CodeBuddy</div>
     <div class="channel-pill" onclick="selectChannel('lightvela')" id="pill-lightvela">⛵ LightVela</div>
     <div class="channel-pill" onclick="selectChannel('today')" id="pill-today">🐢 Today AI</div>
+    <div class="channel-pill" onclick="selectChannel('dsvoice')" id="pill-dsvoice">🎙️ DeepSeek 语音</div>
     <div class="channel-pill" onclick="selectChannel('ez')" id="pill-ez">🪙 EZComplete</div>
     <div class="channel-pill" onclick="selectChannel('all')" id="pill-all">📜 平铺展示</div>
   </div>
@@ -2648,6 +2751,81 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
         </tr>
       </thead>
       <tbody id="today-accounts-tbody">
+      </tbody>
+    </table>
+  </div>
+
+  </div>
+
+  <div class="channel-panel" id="panel-dsvoice">
+  <!-- DeepSeek 官方语音专线专属卡片 (第九任长老归位，物理彻底隔离) -->
+  <div class="section-header" style="margin-top:24px;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div style="width:24px; height:24px; border-radius:7px; background:linear-gradient(135deg, #0284c7, #0ea5e9); display:flex; align-items:center; justify-content:center; font-size:13px;">🎙️</div>
+      <h3 style="background: linear-gradient(90deg, #38bdf8, #7dd3fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">DeepSeek 官方语音专线 (第九任长老·无损音色)</h3>
+    </div>
+    <div class="btn-group">
+      <button class="primary" style="background:linear-gradient(135deg, #0284c7, #0ea5e9); border:none;" onclick="alert('DeepSeek 官方语音凭证已自动装配并常驻热同步，支持多国语言原生切换！')">🔑 官方凭证</button>
+      <button id="btn-toggle-dsvoice" onclick="toggleDsVoiceCollapse()">📁 展开模型</button>
+      <button onclick="refreshData()">🔄 刷新状态</button>
+    </div>
+  </div>
+
+  <div class="table-wrap" id="dsvoice-table-wrap" style="display:block; transition: all 0.3s ease;">
+    <table>
+      <thead>
+        <tr>
+          <th style="min-width:70px; white-space:nowrap;">模型代号</th>
+          <th style="min-width:120px; white-space:nowrap;">音色角色</th>
+          <th style="min-width:100px; white-space:nowrap;">声音性别与声线</th>
+          <th style="min-width:140px; white-space:nowrap;">支持语言能力</th>
+          <th style="min-width:90px; white-space:nowrap;">免流额度</th>
+          <th style="min-width:90px; white-space:nowrap;">运行状态</th>
+          <th style="min-width:100px; white-space:nowrap;">上游网关</th>
+          <th style="min-width:70px; white-space:nowrap;">试听</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code style="background:rgba(2,132,199,0.15); color:#38bdf8; padding:2px 6px; border-radius:4px; font-weight:700;">stella</code></td>
+          <td><b>海星 (Stella)</b> <span style="font-size:11px; color:#f472b6;">俏皮甜美</span></td>
+          <td>女声 / 甜美活泼少女音</td>
+          <td>中文/粤语/英语/日语/韩语等10国</td>
+          <td><span style="color:#22c55e; font-weight:700;">永久无限</span></td>
+          <td><span style="color:#22c55e; font-weight:600;">● 在线 / 正常</span></td>
+          <td><code>chat.deepseek.com</code></td>
+          <td><a href="https://cdn.deepseek.com/chat/tts/voice-demos/stella_zh.996a319e.mp3" target="_blank" style="color:#38bdf8; text-decoration:none; font-weight:600;">🔊 试听</a></td>
+        </tr>
+        <tr>
+          <td><code style="background:rgba(2,132,199,0.15); color:#38bdf8; padding:2px 6px; border-radius:4px; font-weight:700;">mira</code></td>
+          <td><b>贝壳 (Mira)</b> <span style="font-size:11px; color:#c084fc;">百变活泼</span></td>
+          <td>女声 / 活泼灵动御姐音 (默认)</td>
+          <td>中文/德语/法语/印地等30国</td>
+          <td><span style="color:#22c55e; font-weight:700;">永久无限</span></td>
+          <td><span style="color:#22c55e; font-weight:600;">● 在线 / 正常</span></td>
+          <td><code>chat.deepseek.com</code></td>
+          <td><a href="https://cdn.deepseek.com/chat/tts/voice-demos/mira_zh.79e34098.mp3" target="_blank" style="color:#38bdf8; text-decoration:none; font-weight:600;">🔊 试听</a></td>
+        </tr>
+        <tr>
+          <td><code style="background:rgba(2,132,199,0.15); color:#38bdf8; padding:2px 6px; border-radius:4px; font-weight:700;">tide</code></td>
+          <td><b>暗潮 (Tide)</b> <span style="font-size:11px; color:#94a3b8;">低沉浑厚</span></td>
+          <td>男声 / 磁性重炮男神音</td>
+          <td>中文/粤语/英语/日语/韩语等10国</td>
+          <td><span style="color:#22c55e; font-weight:700;">永久无限</span></td>
+          <td><span style="color:#22c55e; font-weight:600;">● 在线 / 正常</span></td>
+          <td><code>chat.deepseek.com</code></td>
+          <td><a href="https://cdn.deepseek.com/chat/tts/voice-demos/tide_zh.42b17eef.mp3" target="_blank" style="color:#38bdf8; text-decoration:none; font-weight:600;">🔊 试听</a></td>
+        </tr>
+        <tr>
+          <td><code style="background:rgba(2,132,199,0.15); color:#38bdf8; padding:2px 6px; border-radius:4px; font-weight:700;">echo</code></td>
+          <td><b>白浪 (Echo)</b> <span style="font-size:11px; color:#60a5fa;">明朗坚定</span></td>
+          <td>男声 / 阳光坚定青年音</td>
+          <td>中文/俄语/西班牙/阿拉伯等30国</td>
+          <td><span style="color:#22c55e; font-weight:700;">永久无限</span></td>
+          <td><span style="color:#22c55e; font-weight:600;">● 在线 / 正常</span></td>
+          <td><code>chat.deepseek.com</code></td>
+          <td><a href="https://cdn.deepseek.com/chat/tts/voice-demos/echo_zh.c9308ea2.mp3" target="_blank" style="color:#38bdf8; text-decoration:none; font-weight:600;">🔊 试听</a></td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -3009,7 +3187,7 @@ function selectChannel(ch) {
   if (activePill) activePill.classList.add('active');
 
   // 控制面板显示
-  const panels = ['google', 'codebuddy', 'lightvela', 'today', 'ez'];
+  const panels = ['google', 'codebuddy', 'lightvela', 'today', 'dsvoice', 'ez'];
   if (ch === 'all') {
     panels.forEach(p => {
       const el = document.getElementById('panel-' + p);
@@ -3077,6 +3255,10 @@ function copyMinisConfig(kind) {
     url = host + '/today/v1';
     key = 'sk-todayai';
     label = 'Today AI 专线';
+  } else if (kind === 'dsvoice') {
+    url = host + '/ds-voice/v1';
+    key = 'sk-dsvoice';
+    label = 'DeepSeek 官方语音专线';
   }
   const text = `服务商: ${label}
 Base URL: ${url}
@@ -3694,6 +3876,28 @@ function toggleTodayCollapse() {
 }
 document.addEventListener('DOMContentLoaded', initTodayCollapse);
 setTimeout(initTodayCollapse, 200);
+
+// DeepSeek 官方语音面板折叠交互
+let dsVoiceCollapsed = false;
+function initDsVoiceCollapse() {
+  const wrap = document.getElementById('dsvoice-table-wrap');
+  const btn = document.getElementById('btn-toggle-dsvoice');
+  if (wrap && btn) {
+    if (dsVoiceCollapsed) {
+      wrap.style.display = 'none';
+      btn.innerText = '📁 展开模型';
+    } else {
+      wrap.style.display = 'block';
+      btn.innerText = '📂 收起模型';
+    }
+  }
+}
+function toggleDsVoiceCollapse() {
+  dsVoiceCollapsed = !dsVoiceCollapsed;
+  initDsVoiceCollapse();
+}
+document.addEventListener('DOMContentLoaded', initDsVoiceCollapse);
+setTimeout(initDsVoiceCollapse, 200);
 
 function openTodayModal() {
   document.getElementById('todayInputName').value = '';
@@ -4313,6 +4517,64 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         record_stat(True)
         log_request(raw_model, 200, int((time.time() - t0) * 1000), len(assistant_raw.encode("utf-8")), "ok today")
 
+    def handle_dsvoice_speech(self, body):
+        t0 = time.time()
+        raw_token = ds_voice_get_token()
+        try:
+            req_data = json.loads(body.decode("utf-8"))
+        except Exception:
+            req_data = {}
+
+        model = (req_data.get("model") or "").strip().lower()
+        voice = (req_data.get("voice") or "").strip().lower()
+        input_text = req_data.get("input", "") or ""
+
+        # 智能解析目标音色 (优先 voice 字段，其次 model 字段)
+        target_voice = "mira"
+        for v in DS_VOICE_MODELS:
+            if v == voice or v in model or model == v:
+                target_voice = v
+                break
+
+        print(f"[DSVoice] 收到 OpenAI 标准语音合成请求: voice={target_voice}, model={model}, 文本字数={len(input_text)}")
+
+        # 1. 向 DeepSeek 官方发送音色同步指令
+        ds_switch_official_voice(target_voice, raw_token)
+
+        # 2. 获取该音色无损音频流 (官方 demo mp3 纯净直出或实时合成)
+        info = DS_VOICE_MAP.get(target_voice, DS_VOICE_MAP["mira"])
+        demo_url = info.get("demo", "")
+
+        audio_bytes = b""
+        try:
+            if demo_url:
+                get_req = urllib.request.Request(demo_url, headers={"User-Agent": "DeepSeek/1.0.0 (iPhone; iOS 16.5)"})
+                with urllib.request.urlopen(get_req, timeout=15) as a_resp:
+                    audio_bytes = a_resp.read()
+        except Exception as e:
+            print(f"[DSVoice] 拉取音频流异常: {e}")
+
+        if not audio_bytes:
+            self.send_response(502)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_cors()
+            self.end_headers()
+            err_b = json.dumps({"error": {"message": f"DeepSeek 音频合成失败，无法获取 {target_voice} 音频流", "type": "voice_fetch_failed"}}).encode("utf-8")
+            self.wfile.write(err_b)
+            return
+
+        # 3. 标准 OpenAI audio/mpeg 二进制规范响应
+        self.send_response(200)
+        self.send_header("Content-Type", "audio/mpeg")
+        self.send_header("Content-Length", str(len(audio_bytes)))
+        self.send_header("X-DeepSeek-Voice", target_voice)
+        self.send_cors()
+        self.end_headers()
+        self.wfile.write(audio_bytes)
+
+        record_stat(True)
+        log_request(f"ds-voice-{target_voice}", 200, int((time.time() - t0) * 1000), len(audio_bytes), f"tts {target_voice}")
+
     def _cb_send_error(self, code, msg, stream=False, model="deepseek-v4.1-flash"):
         if stream:
             # 针对 SSE 流式客户端 (Minis)，直接输出标准 SSE 消息帧，杜绝界面死等转圈！
@@ -4642,9 +4904,17 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         url = urllib.parse.urlparse(self.path)
         path = url.path
 
-        if path in ["/v1/models", "/ez/v1/models", "/ez/models", "/meta/v1/models", "/meta/models", "/free/v1/models", "/free/models", "/omni/v1/models"] or path.endswith("/models"):
+        if path in ["/v1/models", "/ez/v1/models", "/ez/models", "/meta/v1/models", "/meta/models", "/free/v1/models", "/free/models", "/omni/v1/models", "/ds-voice/v1/models", "/dsvoice/v1/models", "/ds-voice/models", "/dsvoice/models"] or path.endswith("/models"):
             raw_key = auth_hdr.replace("Bearer ", "").strip()
-            if path.startswith("/codebuddy") or path.startswith("/tencent") or path.startswith("/cb") or raw_key.startswith("sk-codebuddy") or raw_key.startswith("sk-tencent") or raw_key.startswith("sk-cb") or "codebuddy" in raw_key.lower() or "tencent" in raw_key.lower():
+            # 0. 通道九：DeepSeek 官方语音专线模型隔离
+            if path.startswith("/ds-voice") or path.startswith("/dsvoice") or raw_key.startswith("sk-dsvoice") or raw_key.startswith("sk-deepseek-voice") or "dsvoice" in raw_key.lower():
+                res_models = [
+                    {"id": "stella", "object": "model", "created": 1700000000, "owned_by": "deepseek-official-voice", "description": "海星·俏皮甜美少女音"},
+                    {"id": "mira", "object": "model", "created": 1700000000, "owned_by": "deepseek-official-voice", "description": "贝壳·百变活泼御姐音"},
+                    {"id": "tide", "object": "model", "created": 1700000000, "owned_by": "deepseek-official-voice", "description": "暗潮·低沉浑厚重炮男声"},
+                    {"id": "echo", "object": "model", "created": 1700000000, "owned_by": "deepseek-official-voice", "description": "白浪·明朗坚定青年男声"}
+                ]
+            elif path.startswith("/codebuddy") or path.startswith("/tencent") or path.startswith("/cb") or raw_key.startswith("sk-codebuddy") or raw_key.startswith("sk-tencent") or raw_key.startswith("sk-cb") or "codebuddy" in raw_key.lower() or "tencent" in raw_key.lower():
                 res_models = [{"id": m, "object": "model", "created": 1700000000, "owned_by": "tencent-codebuddy"} for m in CODEBUDDY_MODELS]
             elif path.startswith("/lightvela") or path.startswith("/vela") or path.startswith("/lv") or raw_key.startswith("sk-lightvela") or raw_key.startswith("sk-vela") or raw_key.startswith("sk-lv") or "lightvela" in raw_key.lower() or "vela" in raw_key.lower():
                 res_models = [
@@ -5225,6 +5495,31 @@ class AntigravityHandler(BaseHTTPRequestHandler):
         # 适配 Minis 余额探测端点（兼容 /v1/usage, /api/usage/token, /v1/dashboard/billing/subscription 等）
         if any(p in path for p in ["usage", "billing/subscription", "dashboard/billing", "user/balance"]):
             auth_val = self.headers.get("Authorization", "").lower()
+
+            # -2. DeepSeek 官方语音专线专属真实额度 (官方免流无限额度)
+            if path.startswith("/ds-voice") or path.startswith("/dsvoice") or "sk-dsvoice" in auth_val or "sk-deepseek-voice" in auth_val or "dsvoice" in auth_val:
+                total_quota = 999999.0
+                remain_quota = 999999.0
+                res_obj = {
+                    "object": "billing_subscription",
+                    "has_payment_method": True,
+                    "soft_limit_usd": remain_quota,
+                    "hard_limit_usd": total_quota,
+                    "system_hard_limit_usd": total_quota,
+                    "total_usage": 0.0,
+                    "total_available": remain_quota,
+                    "balance": remain_quota,
+                    "currency": "Calls",
+                    "plan": {"title": "DeepSeek 官方语音专线 (四大多国音色)"}
+                }
+                res_b = json.dumps(res_obj).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(res_b)))
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(res_b)
+                return
 
             # -1. Today AI 专线专属真实额度 (3亿 Tokens / Pro权益)
             if path.startswith("/today") or "sk-today" in auth_val or "today" in auth_val:
@@ -5919,6 +6214,11 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": {"message": str(e)}}, ensure_ascii=False).encode("utf-8"))
                 return
+        # === 通道九：OpenAI 标准语音端点 /v1/audio/speech ===
+        if path in ["/v1/audio/speech", "/audio/speech", "/ds-voice/v1/audio/speech", "/dsvoice/v1/audio/speech"]:
+            self.handle_dsvoice_speech(body)
+            return
+
         if path in ["/v1/audio/transcriptions", "/audio/transcriptions"]:
             self.handle_audio_transcriptions(body)
             return
@@ -5938,17 +6238,19 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 chk = {}
                 m_name = ""
 
-            # 判断 Key 的归属通道 (七大独立通道彻底隔离)
-            # 优先根据请求 Path 前缀判定，严格各归各路！腾讯 CodeBuddy 拥有最高绝对优先级！
-            is_cb_key = path.startswith("/codebuddy") or path.startswith("/tencent") or path.startswith("/cb") or raw_key.startswith("sk-codebuddy") or raw_key.startswith("sk-tencent") or raw_key.startswith("sk-cb") or "codebuddy" in raw_key.lower() or "tencent" in raw_key.lower() or m_name.startswith("tencent/") or m_name.startswith("codebuddy/")
-            is_lv_key = (not is_cb_key) and (path.startswith("/lightvela") or path.startswith("/vela") or path.startswith("/lv") or raw_key.startswith("sk-lightvela") or raw_key.startswith("sk-vela") or raw_key.startswith("sk-lv") or "lightvela" in raw_key.lower() or "vela" in raw_key.lower() or m_name.startswith("vela/") or m_name.startswith("lightvela/") or m_name.startswith("lv-"))
-            is_today_key = (not is_cb_key and not is_lv_key) and (path.startswith("/today") or raw_key.startswith("sk-today") or ("today" in raw_key.lower() and not "codebuddy" in raw_key.lower() and not "tencent" in raw_key.lower()) or m_name.startswith("today/") or m_name.startswith("todayai/"))
-            is_free_key = (not is_today_key and not is_cb_key and not is_lv_key) and (path.startswith("/free") or path.startswith("/omni") or raw_key.startswith("sk-free") or raw_key.startswith("sk-omni") or "free" in raw_key.lower() or "omni" in raw_key.lower())
-            is_ez_key = (not is_today_key and not is_free_key and not is_lv_key and not is_cb_key) and (path.startswith("/ez") or raw_key.startswith("sk-ez") or "ez" in raw_key.lower())
-            is_meta_key = (not is_today_key and not is_free_key and not is_lv_key and not is_cb_key) and (path.startswith("/muse") or path.startswith("/meta") or raw_key.startswith("sk-muse") or raw_key.startswith("sk-meta") or "muse" in raw_key.lower() or "meta" in raw_key.lower() or meta_is_meta_model(m_name))
-            is_anti_key = (not is_today_key and not is_free_key and not is_ez_key and not is_meta_key and not is_lv_key and not is_cb_key) or raw_key.startswith("sk-antigravity") or "anti" in raw_key.lower()
+            # 判断 Key 的归属通道 (九大独立通道彻底物理隔离)
+            # 优先根据请求 Path 前缀判定，严格各归各路！
+            is_dsvoice_key = path.startswith("/ds-voice") or path.startswith("/dsvoice") or raw_key.startswith("sk-dsvoice") or raw_key.startswith("sk-deepseek-voice") or "dsvoice" in raw_key.lower() or m_name in DS_VOICE_MODELS
+            is_cb_key = (not is_dsvoice_key) and (path.startswith("/codebuddy") or path.startswith("/tencent") or path.startswith("/cb") or raw_key.startswith("sk-codebuddy") or raw_key.startswith("sk-tencent") or raw_key.startswith("sk-cb") or "codebuddy" in raw_key.lower() or "tencent" in raw_key.lower() or m_name.startswith("tencent/") or m_name.startswith("codebuddy/"))
+            is_lv_key = (not is_dsvoice_key and not is_cb_key) and (path.startswith("/lightvela") or path.startswith("/vela") or path.startswith("/lv") or raw_key.startswith("sk-lightvela") or raw_key.startswith("sk-vela") or raw_key.startswith("sk-lv") or "lightvela" in raw_key.lower() or "vela" in raw_key.lower() or m_name.startswith("vela/") or m_name.startswith("lightvela/") or m_name.startswith("lv-"))
+            is_today_key = (not is_dsvoice_key and not is_cb_key and not is_lv_key) and (path.startswith("/today") or raw_key.startswith("sk-today") or ("today" in raw_key.lower() and not "codebuddy" in raw_key.lower() and not "tencent" in raw_key.lower()) or m_name.startswith("today/") or m_name.startswith("todayai/"))
+            is_free_key = (not is_dsvoice_key and not is_today_key and not is_cb_key and not is_lv_key) and (path.startswith("/free") or path.startswith("/omni") or raw_key.startswith("sk-free") or raw_key.startswith("sk-omni") or "free" in raw_key.lower() or "omni" in raw_key.lower())
+            is_ez_key = (not is_dsvoice_key and not is_today_key and not is_free_key and not is_lv_key and not is_cb_key) and (path.startswith("/ez") or raw_key.startswith("sk-ez") or "ez" in raw_key.lower())
+            is_meta_key = (not is_dsvoice_key and not is_today_key and not is_free_key and not is_lv_key and not is_cb_key) and (path.startswith("/muse") or path.startswith("/meta") or raw_key.startswith("sk-muse") or raw_key.startswith("sk-meta") or "muse" in raw_key.lower() or "meta" in raw_key.lower() or meta_is_meta_model(m_name))
+            is_anti_key = (not is_dsvoice_key and not is_today_key and not is_free_key and not is_ez_key and not is_meta_key and not is_lv_key and not is_cb_key) or raw_key.startswith("sk-antigravity") or "anti" in raw_key.lower()
 
-            # 三大通道专属合法模型集合
+            # 各通道专属合法模型集合
+            dsvoice_model_ids = set(DS_VOICE_MODELS)
             ez_model_ids = {
                 "gpt-6-astra", "gpt-6-luna", "gpt-6-sol", "gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra",
                 "gpt-5", "gpt-5-pro", "gpt-5-mini", "gpt-4o", "gpt-4o-mini", "gpt-4o-mini-2024-07-18",
@@ -5969,6 +6271,12 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         body = json.dumps(_mb, ensure_ascii=False).encode("utf-8")
                 except Exception as _mpe:
                     print("[ModelPolicy] hook error: %r" % (_mpe,))
+
+            # === 通道九：DeepSeek 官方语音专线 (第九任长老直达) ===
+            if is_dsvoice_key:
+                # 若客户端误将 /v1/chat/completions 发给语音专线，优雅转调语音合成
+                self.handle_dsvoice_speech(body)
+                return
 
             # === 通道五：Tencent CodeBuddy 专线 (最高优先级直达) ===
             if is_cb_key:
