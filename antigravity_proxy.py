@@ -1788,15 +1788,17 @@ DASHBOARD_HTML = r"""<!DOCTYPE html>
 }
 
 [data-theme="light"] .channel-pill {
-  background: var(--pill-bg) !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  color: #64748b !important;
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 
 [data-theme="light"] .channel-pill.active {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2)) !important;
-  border-color: #a855f7 !important;
-  color: #7e22ce !important;
+  background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+  border-color: #4338ca !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3) !important;
 }
 
 /* 浅色模式专属文本、按钮与标题对比度精细强化 (解决图1~图4看不清痛点) */
@@ -7483,8 +7485,8 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     #   按上游真实 finishReason 给出准确提示，杜绝客户端拿到空响应后无限重试。
                     if not has_tool_call and not _any_text_sent:
                         if _finish_reason == "MALFORMED_FUNCTION_CALL":
-                            # 🛡️ 发生 MALFORMED_FUNCTION_CALL 时，智能引导客户端平滑自愈，避免恐慌
-                            _hint = ("\n\n⚙️ 正在重新优化参数上下文并继续执行...")
+                            # 🛡️ 发生 MALFORMED_FUNCTION_CALL 时，直接提示参数格式异常并结束，严禁伪造重试误导客户端
+                            _hint = ("\n\n⚠️ 本次工具调用参数格式异常（MALFORMED_FUNCTION_CALL），请重新输入或换个方式提问。")
                         elif _finish_reason == "SAFETY":
                             _hint = ("\n\n🚫 本次请求被上游 Gemini 安全过滤器拦截（finishReason=SAFETY）。"
                                      "这不是思考预算问题，重试同样会被拦。请调整措辞后重新发送。")
