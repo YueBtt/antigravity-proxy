@@ -7485,8 +7485,8 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     #   按上游真实 finishReason 给出准确提示，杜绝客户端拿到空响应后无限重试。
                     if not has_tool_call and not _any_text_sent:
                         if _finish_reason == "MALFORMED_FUNCTION_CALL":
-                            # 🛡️ 发生 MALFORMED_FUNCTION_CALL 时，直接提示参数格式异常并结束，严禁伪造重试误导客户端
-                            _hint = ("\n\n⚠️ 本次工具调用参数格式异常（MALFORMED_FUNCTION_CALL），请重新输入或换个方式提问。")
+                            # 🛡️ 发生 MALFORMED_FUNCTION_CALL 时，静默让客户端自然结束，绝不喷黄标打断用户体验
+                            _hint = ""
                         elif _finish_reason == "SAFETY":
                             _hint = ("\n\n🚫 本次请求被上游 Gemini 安全过滤器拦截（finishReason=SAFETY）。"
                                      "这不是思考预算问题，重试同样会被拦。请调整措辞后重新发送。")
@@ -7499,17 +7499,18 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                         else:
                             _hint = ("\n\n⚠️ 本次上游返回空正文（finishReason=%s），重试通常可恢复。"
                                      % (_finish_reason or "UNKNOWN"))
-                        try:
-                            self.wfile.write(("data: " + json.dumps({
-                                "id": chat_id, "object": "chat.completion.chunk",
-                                "created": created_time, "model": target_model,
-                                "choices": [{"index": 0,
-                                             "delta": {"content": _hint},
-                                             "finish_reason": None}]
-                            }, ensure_ascii=False) + "\n\n").encode("utf-8"))
-                            self.wfile.flush()
-                        except Exception:
-                            pass
+                        if _hint:
+                            try:
+                                self.wfile.write(("data: " + json.dumps({
+                                    "id": chat_id, "object": "chat.completion.chunk",
+                                    "created": created_time, "model": target_model,
+                                    "choices": [{"index": 0,
+                                                 "delta": {"content": _hint},
+                                                 "finish_reason": None}]
+                                }, ensure_ascii=False) + "\n\n").encode("utf-8"))
+                                self.wfile.flush()
+                            except Exception:
+                                pass
                     if has_tool_call:
                         f_reason = "tool_calls"
                     elif _finish_reason == "SAFETY":
