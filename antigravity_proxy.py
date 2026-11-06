@@ -7245,12 +7245,61 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     req_obj = urllib.request.Request(target_url, data=gz_b, headers=hdrs)
                     try:
                         resp_obj = CELLULAR_OPENER.open(req_obj, timeout=600)
+                        # 🛡️ 预读首行探活：检查是否被 Google 内部安全策略(PUP/Policy)在 200 流内阻断
+                        # 若命中 "Request is blocked due to the account restrictions"，立即抛弃并冷却该账号，秒切下一个健康账号！
+                        first_line = resp_obj.readline()
+                        if first_line:
+                            fl_str = first_line.decode("utf-8", errors="ignore")
+                            if "Request is blocked" in fl_str or "Prohibited Use Policy" in fl_str or "account restrictions" in fl_str:
+                                print(f"[Failover] 账号 {acc_item.get('email')} 命中 Google PUP 账号限制拦截，立即冷却并秒切下一账号！")
+                                ACCOUNT_COOLDOWN[acc_item.get('email')] = time.time() + 86400  # 冷却24小时
+                                try:
+                                    resp_obj.close()
+                                except Exception:
+                                    pass
+                                break
+
+                        # 构造包装流，把预读的第一行无缝拼回流首
+                        class _PrefetchedStream:
+                            def __init__(self, raw_resp, head_bytes):
+                                self._r = raw_resp
+                                self._head = head_bytes
+                                self._head_read = False
+                            def __iter__(self):
+                                return self
+                            def __next__(self):
+                                if not self._head_read:
+                                    self._head_read = True
+                                    if self._head:
+                                        return self._head
+                                return self._r.__next__()
+                            def readline(self, *a, **k):
+                                if not self._head_read:
+                                    self._head_read = True
+                                    if self._head:
+                                        return self._head
+                                return self._r.readline(*a, **k)
+                            def read(self, *a, **k):
+                                if not self._head_read:
+                                    self._head_read = True
+                                    if self._head:
+                                        return self._head + self._r.read(*a, **k)
+                                return self._r.read(*a, **k)
+                            def close(self):
+                                return self._r.close()
+                            def __enter__(self):
+                                return self
+                            def __exit__(self, *a):
+                                return self.close()
+
+                        wrapped_resp = _PrefetchedStream(resp_obj, first_line)
+
                         if not acc_item.get("active"):
                             for a in accs:
                                 a["active"] = (a.get("email") == acc_item.get("email"))
                             save_accounts(accs)
                             print(f"[Failover] Promoted healthy account {acc_item.get('email')} to primary active account!")
-                        return resp_obj
+                        return wrapped_resp
                     except urllib.error.HTTPError as he:
                         last_exc = he
                         err_body = ""
