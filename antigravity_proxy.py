@@ -821,17 +821,22 @@ def fetch_upstream_dynamic_models():
 
     discovered_models = set(SUPPORTED_MODELS)
 
-    # 官方下一代旗舰 Gemini 4 Argon 纯血真实大核与 5.5 High
-    discovered_models.add("gemini-4-argon-high")
-    discovered_models.add("claude-sonnet-5-5-high")
-    discovered_models.add("claude-opus-5-5-high")
-    discovered_models.add("gemini-3.1-flash-image")
+    # 官方下一代旗舰 Gemini 4 纯血真实大核与 Claude 5.5
+    for m_extra in [
+        "gemini-4-hydrogen-xhigh", "gemini-4-hydrogen-high", "gemini-4-hydrogen-medium", "gemini-4-hydrogen-low",
+        "gemini-4-argon-high", "gemini-4-argon-medium", "gemini-4-argon-low",
+        "claude-opus-5-5-high", "claude-opus-5-5-medium", "claude-opus-5-5-low",
+        "claude-sonnet-5-5-high", "claude-sonnet-5-5-medium", "claude-sonnet-5-5-low",
+        "gemini-3.1-flash-image"
+    ]:
+        discovered_models.add(m_extra)
 
-    # 排序：Argon 旗舰置顶，其次 Claude 5.5 High / Opus / Sonnet，再次 Gemini 3.8/3.7，最后其他
+    # 排序：Hydrogen 超旗舰第一置顶，Argon 旗舰第二置顶，其次 Claude 5.5，再次 3.8
     def _model_sort_key(m):
         m_lower = m.lower()
-        if "argon" in m_lower: return (-1, m)   # Gemini 4 Argon 解锁后置顶
-        if "5-5-high" in m_lower: return (0, m)
+        if "hydrogen" in m_lower: return (-2, m)
+        if "argon" in m_lower: return (-1, m)
+        if "5-5" in m_lower: return (0, m)
         if "opus" in m_lower: return (1, m)
         if "sonnet" in m_lower: return (2, m)
         if "3.8" in m_lower: return (3, m)
@@ -7336,8 +7341,9 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                             print(f"[Failover] Account {acc_item.get('email')} returned {he.code}, switching to next account immediately! (冷却 {_cdmin} 分钟)")
                             break
                         elif he.code in (500, 502, 503, 504):
-                            time.sleep(0.8)
-                            continue
+                            # 503/502/504 上游过载或网关异常，直接秒切下一个健康账号，不再死磕重试3次
+                            print(f"[Failover] Account {acc_item.get('email')} returned {he.code}, switching to next account immediately!")
+                            break
                         elif he.code == 400:
                             low = err_body.lower()
                             if ("location is not supported" in low) or ("failed_precondition" in low):
