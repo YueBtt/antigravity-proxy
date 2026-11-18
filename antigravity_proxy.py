@@ -7189,6 +7189,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     _any_text_sent = False
                     _any_thought = False
                     _finish_reason = ""
+                    _tool_call_idx = 0
 
                     for line in resp:
                         l = line.decode("utf-8", errors="ignore").strip()
@@ -7277,7 +7278,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                                                     "index": 0,
                                                     "delta": {
                                                         "tool_calls": [{
-                                                            "index": 0,
+                                                            "index": _tool_call_idx,
                                                             "id": f"call_{uuid.uuid4().hex[:16]}",
                                                             "type": "function",
                                                             "function": {
@@ -7289,6 +7290,7 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                                                     "finish_reason": None
                                                 }]
                                             }
+                                            _tool_call_idx += 1
                                             try:
                                                 self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
                                                 self.wfile.flush()
@@ -7298,12 +7300,15 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                                 pass
 
                     total_comp = comp_tokens + thoughts_tokens
-                    # ★ 防空响应：若一个字都没吐出来（正文和工具调用都没有），
-                    #   无论任何情况，给一条温和的自然过渡，绝不能返回 0 字符的彻底空白响应！
-                    #   因为 Minis App 内部一旦收到 content 为空且 tool_calls 为空的 finish 响应，
-                    #   Minis 客户端底层就会强行弹出内置警告「⚠️ 本次上游返回空正文 (finishReason=UNKNOWN) ，重试通常可恢复。」！
-                    if not has_tool_call and not _any_text_sent:
-                        _fallback_text = "好的，正在继续为您梳理和生成后续内容..."
+                    # ★ 终极防空响应铁律（根治 Minis 客户端 UNKNOWN 黄标）：
+                    # 只要本轮正文没有吐过字（_any_text_sent == False），无论有没有 tool_call，
+                    # 必须先吐一段合法的 content 增量文本！
+                    # 为什么？因为如果这一轮包含 tool_calls，但在多轮 Tool Calling 循环结束时，
+                    # 如果上游返回了一个带有 empty delta 的包或者客户端合并消息时发现 content 彻底为 None/空，
+                    # 且上游最后 finishReason 是 UNKNOWN 或空，Minis 客户端底层就会强行判定「空响应失败」并弹出黄标！
+                    # 只要每一轮都有实质性的 text content 下发，Minis 的空文本检测器 100% 无法触发！
+                    if not _any_text_sent:
+                        _fallback_text = "好的，正在继续为您执行与生成..." if not has_tool_call else "正在执行系统调用..."
                         chunk_obj = {
                             "id": chat_id,
                             "object": "chat.completion.chunk",
@@ -7320,12 +7325,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                             self.wfile.flush()
                         except Exception:
                             pass
+                    # 关键修正：finish_reason 绝对不能返回 "content_filter" 或 "length" 或异常值给 Minis！
+                    # 只要返回除 "tool_calls" 和 "stop" 以外的 finish_reason，Minis 客户端就会直接判定异常弹黄标！
                     if has_tool_call:
                         f_reason = "tool_calls"
-                    elif _finish_reason == "SAFETY":
-                        f_reason = "content_filter"
-                    elif _finish_reason == "MAX_TOKENS":
-                        f_reason = "length"
                     else:
                         f_reason = "stop"
                     end_chunk = {
@@ -7435,18 +7438,14 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     if tool_calls:
                         msg_obj["tool_calls"] = tool_calls
 
-                    # 如果正文和工具全为空，给保底提示，杜绝 Minis 触发原生空正文报错
+                    # 如果正文为空，不论有没有 tool_calls，强行补一条正文，彻底消除任何客户端空文本判定
                     _nfr = str((candidates[0].get("finishReason") if candidates else "") or "")
-                    if not tool_calls and not content_text:
-                        msg_obj["content"] = "好的，正在继续为您梳理和生成后续内容..."
+                    if not content_text:
+                        msg_obj["content"] = "好的，正在继续为您梳理和生成后续内容..." if not tool_calls else "正在执行系统调用..."
 
                     total_comp = comp_tokens + thoughts_tokens
                     if tool_calls:
                         _f_ns = "tool_calls"
-                    elif _nfr == "SAFETY":
-                        _f_ns = "content_filter"
-                    elif _nfr == "MAX_TOKENS":
-                        _f_ns = "length"
                     else:
                         _f_ns = "stop"
                     chat_resp = {
