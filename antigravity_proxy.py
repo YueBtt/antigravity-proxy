@@ -7300,33 +7300,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                                 pass
 
                     total_comp = comp_tokens + thoughts_tokens
-                    # ★ 终极防空响应铁律（根治 Minis 客户端 UNKNOWN 黄标）：
-                    # 只要本轮正文没有吐过字（_any_text_sent == False），无论有没有 tool_call，
-                    # 必须先吐一段合法的 content 增量文本！
-                    # 为什么？因为如果这一轮包含 tool_calls，但在多轮 Tool Calling 循环结束时，
-                    # 如果上游返回了一个带有 empty delta 的包或者客户端合并消息时发现 content 彻底为 None/空，
-                    # 且上游最后 finishReason 是 UNKNOWN 或空，Minis 客户端底层就会强行判定「空响应失败」并弹出黄标！
-                    # 只要每一轮都有实质性的 text content 下发，Minis 的空文本检测器 100% 无法触发！
-                    if not _any_text_sent:
-                        _fallback_text = "好的，正在继续为您执行与生成..." if not has_tool_call else "正在执行系统调用..."
-                        chunk_obj = {
-                            "id": chat_id,
-                            "object": "chat.completion.chunk",
-                            "created": created_time,
-                            "model": raw_model,
-                            "choices": [{
-                                "index": 0,
-                                "delta": {"content": _fallback_text},
-                                "finish_reason": None
-                            }]
-                        }
-                        try:
-                            self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
-                            self.wfile.flush()
-                        except Exception:
-                            pass
-                    # 关键修正：finish_reason 绝对不能返回 "content_filter" 或 "length" 或异常值给 Minis！
-                    # 只要返回除 "tool_calls" 和 "stop" 以外的 finish_reason，Minis 客户端就会直接判定异常弹黄标！
+                    # ★ 规范流式协议：
+                    # 有 tool_calls 时，delta 里只传 tool_calls，content 必须为 None/不传，绝不能画蛇添足加任何文本！
+                    # 只有在既没有 tool_calls 也没有 text 且属于空结束时，才安全静默结束（stop）。
+                    # 关键规整：finish_reason 严格按照是否有工具调用返回 "tool_calls" 或 "stop"，绝不返回任何奇奇怪怪的值！
                     if has_tool_call:
                         f_reason = "tool_calls"
                     else:
@@ -7438,10 +7415,9 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     if tool_calls:
                         msg_obj["tool_calls"] = tool_calls
 
-                    # 如果正文为空，不论有没有 tool_calls，强行补一条正文，彻底消除任何客户端空文本判定
-                    _nfr = str((candidates[0].get("finishReason") if candidates else "") or "")
-                    if not content_text:
-                        msg_obj["content"] = "好的，正在继续为您梳理和生成后续内容..." if not tool_calls else "正在执行系统调用..."
+                    # 规范格式：有 tool_calls 时绝不强行插入 content 文本，避免污染 UI 渲染
+                    if not content_text and not tool_calls:
+                        msg_obj["content"] = ""
 
                     total_comp = comp_tokens + thoughts_tokens
                     if tool_calls:
