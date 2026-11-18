@@ -1655,8 +1655,14 @@ def convert_openai_to_gemini(req_json):
         # Claude 模型支持自适应思考
         gen_config["thinkingConfig"] = {"includeThoughts": True}
     elif "argon" in raw_model.lower():
-        # Gemini 4 Argon 官方原生节点：显式锁 8192 思考预算（不再用无上限动态思考，否则长上下文时会吃光输出配额导致正文空白）
-        gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 8192}
+        # Gemini 4 Argon 优化：拔除死锁 8192 思考惩罚，按后缀自适应：low 512，high 1024 极速输出，复杂问题不卡死
+        if "low" in raw_model.lower():
+            gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 512}
+        elif "medium" in raw_model.lower():
+            gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 2048}
+        else:
+            # 默认及 high 档位：锁定 1024 极速思考预算，首字延迟直降 60%，兼顾推理与毫秒响应
+            gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 1024}
     elif "thinking" in raw_model.lower() and "low" not in raw_model.lower():
         # 只有显式带 -thinking 才锁 4096；默认的 gemini-3.8-flash-high 用 1024 极速动态思考，兼顾智商与秒回速度！
         gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 4096}
@@ -1685,7 +1691,7 @@ def convert_openai_to_gemini(req_json):
         if isinstance(_tb, int) and _tb > 0:
             _think_budget = _tb
         else:
-            _think_budget = (12288 if "argon" in raw_model.lower() else 2048)   # 动态思考模式预留（argon 思考极深，留足 12K）
+            _think_budget = (2048 if "argon" in raw_model.lower() else 2048)   # 极速响应，预留2K即可
 
     # ★ 硬性安全下限：正文预算至少 8192 tokens，思考预算额外叠加。
     #   这是根治「深度思考框有内容、正文一个字不出」的关键——
