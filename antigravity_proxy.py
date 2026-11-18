@@ -7299,23 +7299,23 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
                     total_comp = comp_tokens + thoughts_tokens
                     # ★ 防空响应：若一个字都没吐出来（正文和工具调用都没有），
-                    #   按上游真实 finishReason 给出准确提示，杜绝客户端拿到空响应后无限重试。
+                    #   只有在真正确定被阻断或异常时才处理；对于 UNKNOWN 或空状态，直接静默自然结束（stop），绝不向客户端下发任何打扰体验的黄标垃圾文字！
                     if not has_tool_call and not _any_text_sent:
-                        if _finish_reason == "MALFORMED_FUNCTION_CALL":
-                            # 🛡️ 发生 MALFORMED_FUNCTION_CALL 时，静默让客户端自然结束，绝不喷黄标打断用户体验
+                        if _finish_reason in ("MALFORMED_FUNCTION_CALL", "UNKNOWN", "", None) or not _finish_reason:
+                            # 🛡️ 发生 MALFORMED_FUNCTION_CALL 或 UNKNOWN 空帧时，静默让客户端自然结束，绝不喷黄标打断用户体验
                             _hint = ""
                         elif _finish_reason == "SAFETY":
                             _hint = ("\n\n🚫 本次请求被上游 Gemini 安全过滤器拦截（finishReason=SAFETY）。"
-                                     "这不是思考预算问题，重试同样会被拦。请调整措辞后重新发送。")
+                                     "建议调整措辞或切换 Claude 模型继续。")
                         elif _finish_reason == "MAX_TOKENS":
                             _hint = ("\n\n⚠️ 本次上游思考链耗尽输出配额（finishReason=MAX_TOKENS），正文为空。"
-                                     "已把思考预算锁到 8192，请直接重试一次。")
+                                     "建议直接重试一次。")
                         elif _finish_reason == "RECITATION":
                             _hint = ("\n\n⚠️ 上游判定内容可能涉及复述受版权保护文本（finishReason=RECITATION），"
                                      "请换个说法重试。")
                         else:
-                            _hint = ("\n\n⚠️ 本次上游返回空正文（finishReason=%s），重试通常可恢复。"
-                                     % (_finish_reason or "UNKNOWN"))
+                            # 其余未知异常静默忽略，绝不给用户弹烦人的 UNKNOWN 黄标
+                            _hint = ""
                         if _hint:
                             try:
                                 self.wfile.write(("data: " + json.dumps({
