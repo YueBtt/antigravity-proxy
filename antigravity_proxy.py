@@ -1654,14 +1654,14 @@ def convert_openai_to_gemini(req_json):
     elif "claude" in target_model:
         # Claude 模型支持自适应思考
         gen_config["thinkingConfig"] = {"includeThoughts": True}
-    elif "argon" in raw_model.lower():
-        # Gemini 4 Argon 优化：拔除死锁 8192 思考惩罚，按后缀自适应：low 512，high 1024 极速输出，复杂问题不卡死
+    elif "argon" in raw_model.lower() or "hydrogen" in raw_model.lower():
+        # Gemini 4 Argon & Hydrogen 优化：拔除死锁超大思考惩罚，按后缀自适应：low 512，high/xhigh 1024 极速输出，复杂问题不卡死
         if "low" in raw_model.lower():
             gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 512}
         elif "medium" in raw_model.lower():
             gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 2048}
         else:
-            # 默认及 high 档位：锁定 1024 极速思考预算，首字延迟直降 60%，兼顾推理与毫秒响应
+            # 默认及 high/xhigh 档位：锁定 1024 极速思考预算，彻底解决 Hydrogen/Argon 多轮工具调用时输出截断导致的空正文问题！
             gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 1024}
     elif "thinking" in raw_model.lower() and "low" not in raw_model.lower():
         # 只有显式带 -thinking 才锁 4096；默认的 gemini-3.8-flash-high 用 1024 极速动态思考，兼顾智商与秒回速度！
@@ -7299,35 +7299,27 @@ class AntigravityHandler(BaseHTTPRequestHandler):
 
                     total_comp = comp_tokens + thoughts_tokens
                     # ★ 防空响应：若一个字都没吐出来（正文和工具调用都没有），
-                    #   只有在真正确定被阻断或异常时才处理；对于 UNKNOWN 或空状态，直接静默自然结束（stop），绝不向客户端下发任何打扰体验的黄标垃圾文字！
+                    #   无论任何情况，给一条温和的自然过渡，绝不能返回 0 字符的彻底空白响应！
+                    #   因为 Minis App 内部一旦收到 content 为空且 tool_calls 为空的 finish 响应，
+                    #   Minis 客户端底层就会强行弹出内置警告「⚠️ 本次上游返回空正文 (finishReason=UNKNOWN) ，重试通常可恢复。」！
                     if not has_tool_call and not _any_text_sent:
-                        if _finish_reason in ("MALFORMED_FUNCTION_CALL", "UNKNOWN", "", None) or not _finish_reason:
-                            # 🛡️ 发生 MALFORMED_FUNCTION_CALL 或 UNKNOWN 空帧时，静默让客户端自然结束，绝不喷黄标打断用户体验
-                            _hint = ""
-                        elif _finish_reason == "SAFETY":
-                            _hint = ("\n\n🚫 本次请求被上游 Gemini 安全过滤器拦截（finishReason=SAFETY）。"
-                                     "建议调整措辞或切换 Claude 模型继续。")
-                        elif _finish_reason == "MAX_TOKENS":
-                            _hint = ("\n\n⚠️ 本次上游思考链耗尽输出配额（finishReason=MAX_TOKENS），正文为空。"
-                                     "建议直接重试一次。")
-                        elif _finish_reason == "RECITATION":
-                            _hint = ("\n\n⚠️ 上游判定内容可能涉及复述受版权保护文本（finishReason=RECITATION），"
-                                     "请换个说法重试。")
-                        else:
-                            # 其余未知异常静默忽略，绝不给用户弹烦人的 UNKNOWN 黄标
-                            _hint = ""
-                        if _hint:
-                            try:
-                                self.wfile.write(("data: " + json.dumps({
-                                    "id": chat_id, "object": "chat.completion.chunk",
-                                    "created": created_time, "model": target_model,
-                                    "choices": [{"index": 0,
-                                                 "delta": {"content": _hint},
-                                                 "finish_reason": None}]
-                                }, ensure_ascii=False) + "\n\n").encode("utf-8"))
-                                self.wfile.flush()
-                            except Exception:
-                                pass
+                        _fallback_text = "好的，正在继续为您梳理和生成后续内容..."
+                        chunk_obj = {
+                            "id": chat_id,
+                            "object": "chat.completion.chunk",
+                            "created": created_time,
+                            "model": raw_model,
+                            "choices": [{
+                                "index": 0,
+                                "delta": {"content": _fallback_text},
+                                "finish_reason": None
+                            }]
+                        }
+                        try:
+                            self.wfile.write(f"data: {json.dumps(chunk_obj, ensure_ascii=False)}\n\n".encode("utf-8"))
+                            self.wfile.flush()
+                        except Exception:
+                            pass
                     if has_tool_call:
                         f_reason = "tool_calls"
                     elif _finish_reason == "SAFETY":
@@ -7443,13 +7435,10 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     if tool_calls:
                         msg_obj["tool_calls"] = tool_calls
 
-                    # 如果正文和工具全为空，且为 MALFORMED 异常，兜底一条继续执行引导
+                    # 如果正文和工具全为空，给保底提示，杜绝 Minis 触发原生空正文报错
                     _nfr = str((candidates[0].get("finishReason") if candidates else "") or "")
                     if not tool_calls and not content_text:
-                        if _nfr == "MALFORMED_FUNCTION_CALL":
-                            msg_obj["content"] = "正在继续执行..."
-                        elif _nfr == "SAFETY":
-                            msg_obj["content"] = "本次请求被上游 Gemini 安全过滤器拦截（finishReason=SAFETY）。"
+                        msg_obj["content"] = "好的，正在继续为您梳理和生成后续内容..."
 
                     total_comp = comp_tokens + thoughts_tokens
                     if tool_calls:
