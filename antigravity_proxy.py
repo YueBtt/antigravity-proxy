@@ -841,7 +841,6 @@ def fetch_upstream_dynamic_models():
     # 官方下一代旗舰 Gemini 4 纯血真实大核与 Claude 5.5
     for m_extra in [
         "gemini-4-neon-high", "gemini-4-neon-xhigh", "gemini-4-neon-medium", "gemini-4-neon-low", "gemini-4-neon",
-        "gemini-4-neon-thinking",
         "gemini-4-hydrogen-xhigh", "gemini-4-hydrogen-high", "gemini-4-hydrogen-medium", "gemini-4-hydrogen-low",
         "gemini-4-argon-high", "gemini-4-argon-medium", "gemini-4-argon-low",
         "claude-opus-5-5-high", "claude-opus-5-5-medium", "claude-opus-5-5-low",
@@ -1526,7 +1525,7 @@ def convert_openai_to_gemini(req_json):
     
     # 严格保持客户端请求的原生模型名称直传上游，针对简写别名智能映射到官方完整档位
     target_model = raw_model
-    if normalized_key in ("gemini-4-neon", "neon", "gemini-4-neon-thinking"):
+    if normalized_key in ("gemini-4-neon", "neon"):
         target_model = "gemini-4-neon-high"
     contents = []
     system_parts = []
