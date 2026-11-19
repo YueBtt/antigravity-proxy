@@ -4611,8 +4611,35 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                 ]
             else:
                 dyn_models = fetch_upstream_dynamic_models()
-                antigravity_models = [{"id": m, "object": "model", "created": 1700000000, "owned_by": "google-antigravity"} for m in dyn_models]
-                antigravity_models.insert(0, {"id": "whisper-1", "object": "model", "created": 1700000000, "owned_by": "openai"})
+                antigravity_models = []
+                for m in dyn_models:
+                    m_lower = m.lower()
+                    # 默认全量开启高级多模态输入（图片、PDF、音频、视频）与深度思考特性
+                    m_item = {
+                        "id": m,
+                        "object": "model",
+                        "created": 1700000000,
+                        "owned_by": "google-antigravity",
+                        "context_window": 1048576,
+                        "max_output_tokens": 65536,
+                        "capabilities": {
+                            "vision": True,
+                            "multimodal": True,
+                            "tools": True,
+                            "reasoning": True
+                        },
+                        "modalities": [
+                            "text_input",
+                            "image_input",
+                            "pdf_input",
+                            "audio_input",
+                            "video_input"
+                        ]
+                    }
+                    if "image" in m_lower:
+                        m_item["modalities"].append("image_output")
+                    antigravity_models.append(m_item)
+                antigravity_models.insert(0, {"id": "whisper-1", "object": "model", "created": 1700000000, "owned_by": "openai", "modalities": ["audio_input"]})
                 res_models = antigravity_models
 
             data = json.dumps({"object": "list", "data": res_models}).encode("utf-8")
