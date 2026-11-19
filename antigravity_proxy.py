@@ -840,6 +840,7 @@ def fetch_upstream_dynamic_models():
 
     # 官方下一代旗舰 Gemini 4 纯血真实大核与 Claude 5.5
     for m_extra in [
+        "gemini-4-neon-high", "gemini-4-neon-xhigh", "gemini-4-neon-medium", "gemini-4-neon-low", "gemini-4-neon",
         "gemini-4-hydrogen-xhigh", "gemini-4-hydrogen-high", "gemini-4-hydrogen-medium", "gemini-4-hydrogen-low",
         "gemini-4-argon-high", "gemini-4-argon-medium", "gemini-4-argon-low",
         "claude-opus-5-5-high", "claude-opus-5-5-medium", "claude-opus-5-5-low",
@@ -848,9 +849,10 @@ def fetch_upstream_dynamic_models():
     ]:
         discovered_models.add(m_extra)
 
-    # 排序：Hydrogen 超旗舰第一置顶，Argon 旗舰第二置顶，其次 Claude 5.5，再次 3.8
+    # 排序：Neon 新旗舰第一置顶，Hydrogen 超旗舰第二置顶，Argon 旗舰第三置顶，其次 Claude 5.5，再次 3.8
     def _model_sort_key(m):
         m_lower = m.lower()
+        if "neon" in m_lower: return (-3, m)
         if "hydrogen" in m_lower: return (-2, m)
         if "argon" in m_lower: return (-1, m)
         if "5-5" in m_lower: return (0, m)
@@ -1521,8 +1523,12 @@ def convert_openai_to_gemini(req_json):
     raw_model = req_json.get("model", "gemini-3.8-flash-high")
     normalized_key = raw_model.strip()
     
-    # 严格保持客户端请求的原生模型名称直传上游
+    # 严格保持客户端请求的原生模型名称直传上游，针对简写别名智能映射到官方完整档位
     target_model = raw_model
+    if normalized_key == "gemini-4-neon":
+        target_model = "gemini-4-neon-high"
+    elif normalized_key == "neon":
+        target_model = "gemini-4-neon-high"
     contents = []
     system_parts = []
     
@@ -1654,14 +1660,14 @@ def convert_openai_to_gemini(req_json):
     elif "claude" in target_model:
         # Claude 模型支持自适应思考
         gen_config["thinkingConfig"] = {"includeThoughts": True}
-    elif "argon" in raw_model.lower() or "hydrogen" in raw_model.lower():
-        # Gemini 4 Argon & Hydrogen 优化：拔除死锁超大思考惩罚，按后缀自适应：low 512，high/xhigh 1024 极速输出，复杂问题不卡死
+    elif "argon" in raw_model.lower() or "hydrogen" in raw_model.lower() or "neon" in raw_model.lower():
+        # Gemini 4 Argon & Hydrogen & Neon 优化：按后缀自适应：low 512，high/xhigh 1024 极速输出
         if "low" in raw_model.lower():
             gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 512}
         elif "medium" in raw_model.lower():
             gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 2048}
         else:
-            # 默认及 high/xhigh 档位：锁定 1024 极速思考预算，彻底解决 Hydrogen/Argon 多轮工具调用时输出截断导致的空正文问题！
+            # 默认及 high/xhigh 档位：锁定 1024 极速思考预算
             gen_config["thinkingConfig"] = {"includeThoughts": True, "thinkingBudget": 1024}
     elif "thinking" in raw_model.lower() and "low" not in raw_model.lower():
         # 只有显式带 -thinking 才锁 4096；默认的 gemini-3.8-flash-high 用 1024 极速动态思考，兼顾智商与秒回速度！
