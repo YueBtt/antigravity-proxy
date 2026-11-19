@@ -775,8 +775,20 @@ REQUEST_LOGS = []
 MAX_LOGS = 300
 
 SUPPORTED_MODELS = [
-    # === Gemini 4 Argon 官方真实纯血旗舰大核 ===
+    # === 【绝对王座置顶】Gemini 4 Neon 全家族 (昨晚最新发布) ===
+    "gemini-4-neon",
+    "gemini-4-neon-high",
+    "gemini-4-neon-xhigh",
+    "gemini-4-neon-medium",
+    "gemini-4-neon-low",
+    # === Gemini 4 家族次席 ===
+    "gemini-4-hydrogen-high",
+    "gemini-4-hydrogen-xhigh",
+    "gemini-4-hydrogen-medium",
+    "gemini-4-hydrogen-low",
     "gemini-4-argon-high",
+    "gemini-4-argon-medium",
+    "gemini-4-argon-low",
     # === Claude 5.5 High (官方正式端点最新放量模型) ===
     "claude-sonnet-5-5-high",
     "claude-opus-5-5-high",
@@ -831,54 +843,8 @@ def fetch_upstream_dynamic_models():
     自动实时向 Google Antigravity 官方 API 发起最新可用模型池探测，
     实现 0 手动干预、一键自动更新官方最新模型！
     """
-    global _CACHED_DYNAMIC_MODELS, _LAST_DYNAMIC_FETCH_TIME
-    now = time.time()
-    if _CACHED_DYNAMIC_MODELS and (now - _LAST_DYNAMIC_FETCH_TIME < 300):
-        return _CACHED_DYNAMIC_MODELS
-
-    discovered_models = set(SUPPORTED_MODELS)
-
-    # 官方下一代旗舰 Gemini 4 纯血真实大核与 Claude 5.5
-    for m_extra in [
-        "gemini-4-neon-high", "gemini-4-neon-xhigh", "gemini-4-neon-medium", "gemini-4-neon-low", "gemini-4-neon",
-        "gemini-4-hydrogen-xhigh", "gemini-4-hydrogen-high", "gemini-4-hydrogen-medium", "gemini-4-hydrogen-low",
-        "gemini-4-argon-high", "gemini-4-argon-medium", "gemini-4-argon-low",
-        "claude-opus-5-5-high", "claude-opus-5-5-medium", "claude-opus-5-5-low",
-        "claude-sonnet-5-5-high", "claude-sonnet-5-5-medium", "claude-sonnet-5-5-low",
-        "gemini-3.1-flash-image"
-    ]:
-        discovered_models.add(m_extra)
-
-    # 排序：Neon 必须绝对第一顶格，其次其他 Gemini 4，再次 Claude 5.5，再次 3.8/3.7/3.6/3.5
-    def _model_sort_key(m):
-        m_lower = m.lower()
-        # 1. 绝对皇冠：Neon 系列独占最高优先级 -100，内部按短名/high/xhigh/medium/low排序
-        if "neon" in m_lower:
-            if m_lower == "gemini-4-neon": return (-100, 0)
-            if "high" in m_lower and "xhigh" not in m_lower: return (-100, 1)
-            if "xhigh" in m_lower: return (-100, 2)
-            if "medium" in m_lower: return (-100, 3)
-            if "low" in m_lower: return (-100, 4)
-            return (-100, 5)
-        # 2. 其他 Gemini 4 新旗舰
-        if "hydrogen" in m_lower: return (-90, m)
-        if "argon" in m_lower: return (-80, m)
-        # 3. Claude 5.5 / 4.6 旗舰
-        if "5-5" in m_lower: return (-70, m)
-        if "opus" in m_lower: return (-60, m)
-        if "sonnet" in m_lower: return (-50, m)
-        # 4. 历史 3.x 代模型
-        if "3.8" in m_lower: return (-40, m)
-        if "3.7" in m_lower: return (-30, m)
-        if "3.6" in m_lower: return (-20, m)
-        if "3.5" in m_lower: return (-10, m)
-        if "image" in m_lower: return (10, m)
-        return (20, m)
-
-    sorted_list = sorted(list(discovered_models), key=_model_sort_key)
-    _CACHED_DYNAMIC_MODELS = sorted_list
-    _LAST_DYNAMIC_FETCH_TIME = now
-    return _CACHED_DYNAMIC_MODELS
+    # 严格保持 SUPPORTED_MODELS 原始顺序：Neon 第一顶格，新模型自动前置！
+    return list(SUPPORTED_MODELS)
 
 
 MODEL_MAP = {}
