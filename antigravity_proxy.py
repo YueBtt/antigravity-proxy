@@ -849,21 +849,31 @@ def fetch_upstream_dynamic_models():
     ]:
         discovered_models.add(m_extra)
 
-    # 排序：Neon 新旗舰第一置顶，Hydrogen 超旗舰第二置顶，Argon 旗舰第三置顶，其次 Claude 5.5，再次 3.8
+    # 排序：Neon 必须绝对第一顶格，其次其他 Gemini 4，再次 Claude 5.5，再次 3.8/3.7/3.6/3.5
     def _model_sort_key(m):
         m_lower = m.lower()
-        if "neon" in m_lower: return (-3, m)
-        if "hydrogen" in m_lower: return (-2, m)
-        if "argon" in m_lower: return (-1, m)
-        if "5-5" in m_lower: return (0, m)
-        if "opus" in m_lower: return (1, m)
-        if "sonnet" in m_lower: return (2, m)
-        if "3.8" in m_lower: return (3, m)
-        if "3.7" in m_lower: return (4, m)
-        if "3.6" in m_lower: return (5, m)
-        if "3.5" in m_lower: return (6, m)
-        if "image" in m_lower: return (7, m)
-        return (8, m)
+        # 1. 绝对皇冠：Neon 系列独占最高优先级 -100，内部按短名/high/xhigh/medium/low排序
+        if "neon" in m_lower:
+            if m_lower == "gemini-4-neon": return (-100, 0)
+            if "high" in m_lower and "xhigh" not in m_lower: return (-100, 1)
+            if "xhigh" in m_lower: return (-100, 2)
+            if "medium" in m_lower: return (-100, 3)
+            if "low" in m_lower: return (-100, 4)
+            return (-100, 5)
+        # 2. 其他 Gemini 4 新旗舰
+        if "hydrogen" in m_lower: return (-90, m)
+        if "argon" in m_lower: return (-80, m)
+        # 3. Claude 5.5 / 4.6 旗舰
+        if "5-5" in m_lower: return (-70, m)
+        if "opus" in m_lower: return (-60, m)
+        if "sonnet" in m_lower: return (-50, m)
+        # 4. 历史 3.x 代模型
+        if "3.8" in m_lower: return (-40, m)
+        if "3.7" in m_lower: return (-30, m)
+        if "3.6" in m_lower: return (-20, m)
+        if "3.5" in m_lower: return (-10, m)
+        if "image" in m_lower: return (10, m)
+        return (20, m)
 
     sorted_list = sorted(list(discovered_models), key=_model_sort_key)
     _CACHED_DYNAMIC_MODELS = sorted_list
@@ -4610,13 +4620,15 @@ class AntigravityHandler(BaseHTTPRequestHandler):
             else:
                 dyn_models = fetch_upstream_dynamic_models()
                 antigravity_models = []
-                for m in dyn_models:
+                now_ts = int(time.time())
+                for idx, m in enumerate(dyn_models):
                     m_lower = m.lower()
-                    # 默认全量开启高级多模态输入（图片、PDF、音频、视频）与深度思考特性
+                    # 让越靠前的核心模型 created 时间戳越新（以递减秒数赋值），彻底适配 Minis 等按时间戳降序排序的客户端！
+                    model_created = now_ts + (10000 - idx * 100)
                     m_item = {
                         "id": m,
                         "object": "model",
-                        "created": 1700000000,
+                        "created": model_created,
                         "owned_by": "google-antigravity",
                         "context_window": 1048576,
                         "max_output_tokens": 65536,
@@ -4637,7 +4649,8 @@ class AntigravityHandler(BaseHTTPRequestHandler):
                     if "image" in m_lower:
                         m_item["modalities"].append("image_output")
                     antigravity_models.append(m_item)
-                antigravity_models.insert(0, {"id": "whisper-1", "object": "model", "created": 1700000000, "owned_by": "openai", "modalities": ["audio_input"]})
+                # whisper-1 扔到最末尾垫底
+                antigravity_models.append({"id": "whisper-1", "object": "model", "created": 1600000000, "owned_by": "openai", "modalities": ["audio_input"]})
                 res_models = antigravity_models
 
             data = json.dumps({"object": "list", "data": res_models}).encode("utf-8")
